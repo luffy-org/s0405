@@ -11,7 +11,7 @@ local_settings.py
 *.sqlite3
 media/
 test.py
-jquery//
+jquery
 bootstrap-3.3.7//
 
 # database migrations
