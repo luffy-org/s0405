@@ -12,7 +12,7 @@ local_settings.py
 media/
 test.py
 jquery
-bootstrap-3.3.7//
+bootstrap-3.3.7
 
 # database migrations
 */migrations/*.py
