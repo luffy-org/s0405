@@ -1,0 +1,57 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{% static 'bootstrap-3.3.7/dist/css/bootstrap.css' %}">
+    <style>
+        .account {
+            width: 450px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <h1>注册</h1>
+    <form>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                {% if field.label == '验证码' %}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="clearfix">
+                        <div class="col-md-6" style="padding: 0;">{{ field }}</div>
+                        <div class="col-md-6"><input class="btn btn-primary" type="button" id="send_code"
+                                                     value="点击获取验证码"></div>
+                    </div>
+                {% else %}
+
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success">注册</button>
+    </form>
+</div>
+<script src="{% static 'jquery/jquery-3.4.1.js' %}"></script>
+<script>
+    $('#send_code').click(function () {
+        var send_phone = $("input[name=mobile_phone]").val();
+
+        $.ajax({
+            url: '/app01/api/send_msg',
+            data: {phone: send_phone, tpl: "register"},
+            type: 'GET',
+            success: function (data) {
+                alert(data.msg)
+            }
+        })
+    })
+
+</script>
+</body>
+</html>
