@@ -20,6 +20,9 @@ class BaseModelForm(ModelForm):
 
 
 class UserInfoModelForm(BaseModelForm):
+    """
+    验证注册
+    """
     mobile_phone = forms.CharField(label='手机号',
                                    validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误')])
     confirm_password = forms.CharField(label='确认密码', widget=forms.widgets.PasswordInput())
@@ -77,6 +80,9 @@ class UserInfoModelForm(BaseModelForm):
 
 
 class SendSmsForm(forms.Form):
+    """
+    验证发送短信
+    """
     mobile_phone = forms.CharField(label='手机号',
                                    validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误')])
 

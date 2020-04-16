@@ -33,3 +33,11 @@ def send_msg(request):
     print(form.errors)
 
     return JsonResponse({"status": False, "error": form.errors})
+
+
+def sem_login(request):
+    """
+    利用手机好进行登陆
+    :param request:
+    :return:
+    """
