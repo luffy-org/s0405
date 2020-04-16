@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 
 from utils.Tencent.sendSms import tencent_send_msg
-from web.forms.account import UserInfoModelForm, SendSmsForm
+from web.forms.account import UserInfoModelForm, SendSmsForm, SmsLoginForm
 
 
 def register(request):
@@ -26,11 +26,10 @@ def send_msg(request):
     :param request:
     :return:
     """
-    form = SendSmsForm(data=request.GET)
+    form = SendSmsForm(request, data=request.GET)
     if form.is_valid():  # 完成对手机的校验,发送短信并写入redis
         data = {"status": True}
         return JsonResponse(data)
-    print(form.errors)
 
     return JsonResponse({"status": False, "error": form.errors})
 
@@ -41,3 +40,12 @@ def sem_login(request):
     :param request:
     :return:
     """
+    if request.method == 'GET':
+        form = SmsLoginForm()
+        return render(request, 'login_sms.html', {'form': form})
+
+    form = SmsLoginForm(data=request.POST)
+    print(request.POST)
+    if form.is_valid():
+        return JsonResponse({"status": True, "data": "/index/"})
+    return JsonResponse({"status": False, "error": form.errors})
