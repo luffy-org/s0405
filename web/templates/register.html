@@ -1,0 +1,154 @@
+{% extends 'layout/basic.html' %}
+{% load static %}
+
+{% block title %}
+    用户注册
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
+    <style>
+        .error-msg {
+            color: red;
+            font-size: 13px;
+            position: absolute;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+        <div class="title">注册</div>
+        <form method="post" novalidate id="regForm">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    {% if field.label == '验证码' %}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        <div class="row">
+                            <div class="col-xs-7">
+                                {{ field }}
+                                <span class="error-msg">{{ field.errors.0 }}</span>
+                                {#                                <span class="error-msg">{{ field.errors.0 }}</span>#}
+                            </div>
+                            <div class="col-xs-5">
+                                <input type="button" id="send_code" class="btn btn-primary" value="点击获取验证码">
+                            </div>
+                        </div>
+                    {% else %}
+
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <span class="error-msg">{{ field.errors.0 }}</span>
+                        {#                        <span>{{ field.errors.0 }}</span>#}
+
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <div class="row">
+                <div class="col-xs-3">
+                    <button type="button" class="btn btn-success" id="btnSubmit">注册</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+
+
+        $('#send_code').click(function () {
+            let send_phone = $("input[name=mobile_phone]").val();
+
+            var obj = $('#send_code');
+
+
+            $.ajax({
+                url: '/api/send_msg',
+                data: {mobile_phone: send_phone},
+                type: 'GET',
+                success: function (data) {
+                    if (data.status) {
+                        settime(obj);
+                        {#sendSmsRemind();#}
+                        console.log(data);
+
+                    }
+                    else {
+                        //将错误信息渲染到span标签上
+
+                        console.log(data.error);
+                        $.each(data.error, function (k, v) {
+                            console.log(k);
+                            $('#id_' + k).next().text(v[0])
+                        });
+
+                        {#$('#id_mobile_phone').next().text(data.error.mobile_phone[0])#}
+                    }
+
+                }
+            })
+        });
+        $('#btnSubmit').click(function () {
+            $('.error-msg').empty();
+            $.ajax({
+                url:'/register/',
+                type:'post',
+                dataType: 'JSON',
+                data: $('#regForm').serialize(),  // 获取form中的所有字段+csrf_token
+                success:function (res) {
+                    if (res.status){
+                        console.log(res);
+                        window.href = res.data
+
+                    }
+                    else {
+                        $.each(res.error, function (k, v) {
+                            $('#id_'+ k).next().text(v[0])
+                        })
+                    }
+
+                }
+            })
+        });
+
+        function sendSmsRemind() {
+            var $smsBtn = $('#send_code');
+            $smsBtn.prop('disabled', true);
+            var time = 60;
+            var remind = setInterval(function () {
+                $smsBtn.val(time + '秒重新发送');
+                time = time - 1;
+                if (time < 1) {
+                    clearInterval(remind);
+                    $smsBtn.val('点击获取验证码').prop('disabled', false);
+                }
+            }, 1000)
+        };
+
+
+        var countdown = 60;
+
+        function settime(obj) {
+            if (countdown == 0) {
+                obj.attr('disabled', false);
+                obj.val('再次获取验证码');
+                countdown = 60;
+                return
+            }
+            else {
+                obj.attr('disabled', true);  // 开启disabled，input框无法编辑
+                obj.val("重新发送(" + countdown + ")");
+                countdown = countdown - 1;
+            }
+            // setTimeout方法在函数内部使用，每隔1秒自动调用自己函数
+            setTimeout(function () {
+                settime(obj)
+            }, 1000)
+        }
+
+
+    </script>
+{% endblock %}

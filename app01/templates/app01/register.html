@@ -39,18 +39,42 @@
 </div>
 <script src="{% static 'jquery/jquery-3.4.1.js' %}"></script>
 <script>
+    var countdown = 60;
+    function settime(obj){
+        if (countdown == 0){
+            obj.attr('disabled', false);
+            obj.val('再次获取验证码');
+            countdown = 60;
+            return
+        }
+        else {
+            obj.attr('disabled', true);  // 开启disabled，input框无法编辑
+            obj.val("重新发送("  + countdown +")");
+            countdown--;
+        }
+        // setTimeout方法在函数内部使用，每隔1秒自动调用自己函数
+        setTimeout(function () {
+            settime(obj)
+        }, 1000)
+    }
+
+
     $('#send_code').click(function () {
-        var send_phone = $("input[name=mobile_phone]").val();
+        let send_phone = $("input[name=mobile_phone]").val();
+
+        var obj = $('#send_code');
+        settime(obj);
 
         $.ajax({
             url: '/app01/api/send_msg',
-            data: {phone: send_phone, tpl: "register"},
+            data: {phone: send_phone},
             type: 'GET',
             success: function (data) {
-                alert(data.msg)
+                console.log(data.msg)
             }
         })
-    })
+    });
+
 
 </script>
 </body>
