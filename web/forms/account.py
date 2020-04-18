@@ -10,6 +10,7 @@ from utils.Tencent.sendSms import tencent_send_msg
 from utils.encrypt import md5
 from web.models import UserInfo
 from django_redis import get_redis_connection
+from django.forms import widgets,fields
 
 
 class BaseModelForm:
@@ -148,4 +149,34 @@ class SmsLoginForm(BaseModelForm, forms.Form):
         return code
 
 
+class LoginForm(BaseModelForm, forms.Form):
+    """
+    账号登陆
+    """
 
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+
+    username = fields.CharField(label='邮箱或者手机号')
+    pwd = forms.CharField(label='密码', widget=forms.PasswordInput(render_value=True))
+    code = forms.CharField(label='验证码')
+
+    def clean_pwd(self):
+        pwd = self.cleaned_data.get('pwd')
+        return md5(pwd)
+
+    def clean_code(self):
+        """
+        校验用户输入的验证码
+        :return:
+        """
+        code = self.cleaned_data.get('code')
+
+        session_code = self.request.session.get('login_code')  # 从用户的session中拿到验证码
+
+        if not session_code:
+            raise ValidationError('验证码失效，请重新获取验证码')
+        if code.strip().upper() != session_code.strip().upper():
+            raise ValidationError('验证码错误')
+        return code

@@ -1,8 +1,11 @@
+from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
-from utils.Tencent.sendSms import tencent_send_msg
-from web.forms.account import UserInfoModelForm, SendSmsForm, SmsLoginForm
+from io import BytesIO
+from utils.pill import check_code
+from web.forms.account import UserInfoModelForm, SendSmsForm, SmsLoginForm, LoginForm
+from web.models import UserInfo
 
 
 def register(request):
@@ -45,7 +48,46 @@ def sem_login(request):
         return render(request, 'login_sms.html', {'form': form})
 
     form = SmsLoginForm(data=request.POST)
-    print(request.POST)
+
     if form.is_valid():
         return JsonResponse({"status": True, "data": "/index/"})
     return JsonResponse({"status": False, "error": form.errors})
+
+
+def login(request):
+    """
+    账号登陆
+    :param request:
+    :return:
+    """
+    if request.method == 'GET':
+        form = LoginForm(request)
+        return render(request, 'login.html', {'form': form})
+    form = LoginForm(request, data=request.POST)
+    if form.is_valid():
+        pwd = form.cleaned_data.get('pwd')
+        user = form.cleaned_data.get('username')
+        # user_obj = UserInfo.objects.filter(username=user, password=pwd).first()
+        user_obj = UserInfo.objects.filter(Q(email=user,password=pwd)|Q(mobile_phone=user, password=pwd)).first()
+        if  user_obj:
+            request.session['user_id'] = user_obj.id
+            return redirect('/index/')
+        form.add_error('pwd', '用户名密码错误')
+    return render(request, 'login.html', {'form': form})
+
+
+
+
+def login_code(request):
+    """
+    或者账号登陆的验证码
+    :param request:
+    :return:
+    """
+    img_object, code = check_code()  # img图片对象  code验证码
+    stream = BytesIO()
+    img_object.save(stream, format='png')
+    # 在生产验证码的同时，将验证码储存起来方便校验
+    request.session['login_code'] = code  # 将生成的code储存到session中
+    return HttpResponse(stream.getvalue())
+
