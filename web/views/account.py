@@ -91,3 +91,7 @@ def login_code(request):
     request.session['login_code'] = code  # 将生成的code储存到session中
     return HttpResponse(stream.getvalue())
 
+
+def logout(request):
+    request.session.flush()
+    return redirect('/index/')

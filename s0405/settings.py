@@ -49,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'web.middleware.auth.AuthMiddleware'
 ]
 
 ROOT_URLCONF = 's0405.urls'
@@ -122,7 +123,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
-
+WHITE_REGEX_URL_LIST = [
+    '/login/',
+    '/api/code/',
+    '/logout/'
+]
 
 try:
     from .local_settings import *

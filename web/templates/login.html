@@ -44,6 +44,11 @@
                     {% endif %}
                 </div>
             {% endfor %}
+            <div>
+                <div style="float: right;">
+                    <a href="{% url 'sms_login' %}">短信验证码登陆</a>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-xs-3">
                     <button type="submit" class="btn btn-success" id="btnSubmit">登陆</button>
