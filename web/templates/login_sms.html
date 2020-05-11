@@ -76,7 +76,7 @@
                 success: function (data) {
                     if (data.status) {
                         settime(obj);
-                        {#sendSmsRemind();#}
+
                         console.log(data);
 
                     }
@@ -103,8 +103,7 @@
                 success:function (res) {
                     if (res.status){
                         console.log(res);
-                        window.href = res.data
-
+                        location.href = res.data
                     }
                     else {
                         $.each(res.error, function (k, v) {

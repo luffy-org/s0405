@@ -69,3 +69,25 @@ from django.test import TestCase
 # print('\n'.join([' '.join(['%s * %s = %-2s' % (j, i , i*j) for j in range(1, i+1)])for i in range(1, 10)]))
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+# l = [1,1,1,2,2,3,3,3,4,4]
+#
+# print(list(set(l)))
+#
+
+c = 'CN IN US'
+print(c.split())

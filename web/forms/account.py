@@ -8,28 +8,25 @@ from django import forms
 from s0405 import settings
 from utils.Tencent.sendSms import tencent_send_msg
 from utils.encrypt import md5
+from web.forms.bootstrap import BootStrapForm
 from web.models import UserInfo
 from django_redis import get_redis_connection
-from django.forms import widgets,fields
+from django.forms import widgets, fields
 
 
-class BaseModelForm:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
-            field.widget.attrs['placeholder'] = '请输入%s' % field.label
 
 
-class UserInfoModelForm(BaseModelForm, ModelForm):
+
+class UserInfoModelForm(BootStrapForm, ModelForm):
     """
     验证注册
     """
     mobile_phone = forms.CharField(label='手机号',
                                    validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误')])
-    confirm_password = forms.CharField(label='确认密码', widget=forms.widgets.PasswordInput())
     password = forms.CharField(widget=forms.widgets.PasswordInput(), max_length=64, min_length=6,
                                error_messages={'max_length': '密码不能超过64位', 'min_length': '密码不能小于6位'}, label='密码')
+    confirm_password = forms.CharField(label='确认密码', widget=forms.widgets.PasswordInput())
+
     code = forms.CharField(label='验证码')
 
     class Meta:
@@ -96,6 +93,7 @@ class SendSmsForm(forms.Form):
                                    validators=[RegexValidator(r'^(1[3|4|5|6|7|8|9])\d{9}$', '手机号格式错误')])
 
     def clean_mobile_phone(self):
+
         mobile_phone = self.cleaned_data.get('mobile_phone')  # 拿到通过格式校验的phone
 
         tpl = self.request.GET.get('tpl')
@@ -121,7 +119,7 @@ class SendSmsForm(forms.Form):
         return mobile_phone
 
 
-class SmsLoginForm(BaseModelForm, forms.Form):
+class SmsLoginForm(BootStrapForm, forms.Form):
     """
     短信登陆
     """
@@ -149,7 +147,7 @@ class SmsLoginForm(BaseModelForm, forms.Form):
         return code
 
 
-class LoginForm(BaseModelForm, forms.Form):
+class LoginForm(BootStrapForm, forms.Form):
     """
     账号登陆
     """

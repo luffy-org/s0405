@@ -1,0 +1,5 @@
+
+
+{% for dict in new_menu_dict %}
+    <li {% if dict.is_active %} class="active" {% endif %}><a href="{{ dict.url }}">{{ dict.title }}</a></li>
+{% endfor %}
