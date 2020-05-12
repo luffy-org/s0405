@@ -9,10 +9,12 @@ register = template.Library()
 @register.inclusion_tag('inclusion/all_project.html')
 def all_project(request):
     """实现下拉框显示项目功能"""
+    # project_id = request.tracer.project.id
     user = request.tracer.user
     my_project = Project.objects.filter(creator=user)
     join_project = ProjectUser.objects.filter(user=user)
-    return {'my_project': my_project, 'join_project': join_project}
+
+    return {'my_project': my_project, 'join_project': join_project, 'request': request}
 
 
 @register.inclusion_tag('inclusion/manage_menu_list.html')

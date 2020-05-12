@@ -59,6 +59,7 @@ class AuthMiddleware(MiddlewareMixin):
         if my_project:
             request.tracer.project = my_project
             return
+
         join_project = ProjectUser.objects.filter(user=request.tracer.user, project_id=project_id).first()
         if join_project:
             request.tracer.project = join_project.project

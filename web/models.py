@@ -109,3 +109,16 @@ class ProjectUser(models.Model):
         verbose_name = "05-项目参与表"
         db_table = verbose_name
         verbose_name_plural = verbose_name
+
+
+class Wiki(models.Model):
+    """项目功能之wiki功能的数据库"""
+    title = models.CharField(verbose_name='wiki标题', max_length=128)
+    content = models.TextField(verbose_name='wiki内容')
+    project = models.ForeignKey(to='Project', verbose_name='属于哪个项目')
+    parent = models.ForeignKey(to='self', verbose_name='父wiki')
+
+    class Meta:
+        verbose_name = '06-项目的wiki表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name

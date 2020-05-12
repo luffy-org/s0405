@@ -1,0 +1,35 @@
+{% extends 'layout/manage.html' %}
+{% block css %}
+    <style>
+        .panel-default {
+            margin-top: 10px;
+        }
+        .title_list {
+            border-right: 1px solid #dddddd;
+            min-height: 600px;
+        }
+        .content {
+            border-left: 1px solid #dddddd;
+            min-height: 600px;
+            margin-left: -1px;
+        }
+    </style>
+
+{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <i class="fa fa-book" aria-hidden="true"></i> 我参与的项目
+        </div>
+        <div class="panel-body">
+        <div class="col-sm-3 title_list">
+            目录
+        </div>
+            <div class="col-sm-9 content">
+                内容
+            </div>
+        </div>
+    </div>
+    </div>
+{% endblock %}

@@ -5,14 +5,14 @@
         {% if my_project %}
             <li><i class="fa fa-list" aria-hidden="true"></i> 我创建的项目</li>
             {% for project in my_project %}
-                <li><a href="{% url 'dashboard' project_id=project.id %}">{{ project.name }}</a></li>
+                <li {% if project.id == request.tracer.project.id %} class="active" {% endif %}><a href="{% url 'dashboard' project_id=project.id %}">{{ project.name }}</a></li>
             {% endfor %}
             <li role="separator" class="divider"></li>
         {% endif %}
         {% if join_project %}
             <li><i class="fa fa-handshake-o" aria-hidden="true"></i> 我参与的项目</li>
             {% for join in join_project %}
-                <li><a href="{% url 'dashboard' project_id=join.project.id %}">{{ join.project }}</a></li>
+                <li {% if join.project.id == request.tracer.project.id %} class="active" {% endif %}><a href="{% url 'dashboard' project_id=join.project.id %}">{{ join.project }}</a></li>
             {% endfor %}
             <li role="separator" class="divider"></li>
         {% endif %}

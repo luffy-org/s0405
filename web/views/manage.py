@@ -23,4 +23,4 @@ def file(request, project_id):
 
 
 def wiki(request, project_id):
-    return render(request, 'dashboard.html')
+    return render(request, 'wiki.html')
