@@ -117,6 +117,7 @@ class Wiki(models.Model):
     content = models.TextField(verbose_name='wiki内容')
     project = models.ForeignKey(to='Project', verbose_name='属于哪个项目')
     parent = models.ForeignKey(to='self', verbose_name='选择父wiki', null=True, blank=True)
+    depth = models.IntegerField(verbose_name='深度', default=1)
 
     class Meta:
         verbose_name = '06-项目的wiki表'

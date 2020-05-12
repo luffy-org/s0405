@@ -16,4 +16,4 @@ class WikiModelForm(BootStrapForm, forms.ModelForm):
 
     class Meta:
         model = Wiki
-        exclude = ['project']
+        exclude = ['project', 'depth']

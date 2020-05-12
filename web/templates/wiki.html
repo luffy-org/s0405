@@ -34,6 +34,9 @@
     </style>
 
 {% endblock %}
+{% block title %}
+    wiki文档
+{% endblock %}
 {% block content %}
     <div class="container-fluid">
         <div class="panel panel-default">
@@ -44,23 +47,65 @@
                 <div>
                     <a href="{% url 'wiki_add' project_id=request.tracer.project.id %}" type="button"
                        class="btn btn-success btn-xs"><i class="fa fa-plus-circle"
-                                                         aria-hidden="true"></i> 新建</a>
+                                                         aria-hidden="true"></i> 新建
+                    </a>
+
                 </div>
             </div>
 
             <div class="panel-body">
                 <div class="col-sm-3 title_list">
-                    目录
+                    <ul id="func">
+
+                    </ul>
                 </div>
                 <div class="col-sm-9 content">
                     <div class="add_wiki">
-                        <h4>wiki文档库</h4>
+                        {% if wiki_obj %}
+                            {{ wiki_obj.title }}
+                        {% else %}
+                        <h4><{{ request.tracer.project }}>wiki文档库</h4>
                         <a href="{% url 'wiki_add' project_id=request.tracer.project.id %}"><i class="fa fa-plus-circle"
                                                                                                aria-hidden="true"></i>
                             新建文章</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
+{% endblock %}
+{% block js %}
+    <script>
+        $(function () {
+            sendajax()
+        });
+
+        function sendajax() {
+            $.ajax({
+                url: '/manage/{{ request.tracer.project.id }}/wiki/order/',
+                type: 'get',
+                dataType: 'JSON',
+                success(res) {
+                    console.log(res);
+                    if (res.status) {
+
+                        $.each(res.data, function (index, item) {
+                            var wiki_href = '?wiki_id=' + item.id;
+
+                            var li = $('<li>').attr('id', 'id_'+item.id).append($('<a>').text(item.title).attr('href', wiki_href)).append($('<ul>'));
+
+                            if (item.parent) {
+                                $('#id_' + item.parent).children('ul').append(li)
+                            }
+                            else {
+                                $('#func').append(li)
+                            }
+
+                        });
+                    }
+                }
+            })
+        }
+    </script>
 {% endblock %}
