@@ -19,7 +19,8 @@ urlpatterns = [
         url(r'^setting/$', manage.setting, name='setting'),
         url(r'^file/$', manage.file, name='file'),
         url(r'^wiki/$', wiki.wiki, name='wiki'),
-        url(r'^wiki/add/$', wiki.add, name='wiki_add'),
+        url(r'^wiki/add/$', wiki.wiki_add, name='wiki_add'),
+        url(r'^wiki/order/$', wiki.wiki_order, name='wiki_order'),
     ], None, None))
 
 ]

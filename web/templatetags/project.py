@@ -32,7 +32,7 @@ def manage_menu_list(request):
     ]
 
     for item in new_menu_list:
-        if item['url'].startswith(url):
+        if url.startswith(item['url']):
             item['is_active'] = True
 
     return {'new_menu_dict': new_menu_list}

@@ -1,6 +1,6 @@
 <li class="dropdown">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-       aria-expanded="false">Dropdown <span class="caret"></span></a>
+       aria-expanded="false">{% if request.tracer.project %}{{ request.tracer.project }}{% else %}所有项目{% endif %}<span class="caret"></span></a>
     <ul class="dropdown-menu">
         {% if my_project %}
             <li><i class="fa fa-list" aria-hidden="true"></i> 我创建的项目</li>

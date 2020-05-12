@@ -116,9 +116,13 @@ class Wiki(models.Model):
     title = models.CharField(verbose_name='wiki标题', max_length=128)
     content = models.TextField(verbose_name='wiki内容')
     project = models.ForeignKey(to='Project', verbose_name='属于哪个项目')
-    parent = models.ForeignKey(to='self', verbose_name='父wiki')
+    parent = models.ForeignKey(to='self', verbose_name='选择父wiki', null=True, blank=True)
 
     class Meta:
         verbose_name = '06-项目的wiki表'
         db_table = verbose_name
         verbose_name_plural = verbose_name
+
+
+    def __str__(self):
+        return self.title
