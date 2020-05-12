@@ -4,32 +4,60 @@
         .panel-default {
             margin-top: 10px;
         }
+
+        /*
+        .panel-body {
+            padding: 0;
+        }
+        */
+        .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
         .title_list {
             border-right: 1px solid #dddddd;
             min-height: 600px;
         }
+
         .content {
             border-left: 1px solid #dddddd;
             min-height: 600px;
             margin-left: -1px;
+        }
+
+        .add_wiki {
+            text-align: center;
+            margin-top: 80px;
         }
     </style>
 
 {% endblock %}
 {% block content %}
     <div class="container-fluid">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <i class="fa fa-book" aria-hidden="true"></i> 我参与的项目
-        </div>
-        <div class="panel-body">
-        <div class="col-sm-3 title_list">
-            目录
-        </div>
-            <div class="col-sm-9 content">
-                内容
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div>
+                    <i class="fa fa-book" aria-hidden="true"></i> wiki文档
+                </div>
+                <div>
+                    <a href="" type="button" class="btn btn-success btn-xs"><i class="fa fa-plus-circle"
+                                                                               aria-hidden="true"></i> 新建</a>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="col-sm-3 title_list">
+                    目录
+                </div>
+                <div class="col-sm-9 content">
+                    <div class="add_wiki">
+                        <h4>wiki文档库</h4>
+                        <a href=""><i class="fa fa-plus-circle" aria-hidden="true"></i> 新建文章</a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 {% endblock %}

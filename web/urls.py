@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
 
-from web.views import account, home, project, manage
+from web.views import account, home, project, manage, wiki
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
     url(r'^api/send_msg/$', account.send_msg),
@@ -18,7 +18,8 @@ urlpatterns = [
         url(r'^issues/$', manage.issues, name='issues'),
         url(r'^setting/$', manage.setting, name='setting'),
         url(r'^file/$', manage.file, name='file'),
-        url(r'^wiki/$', manage.wiki, name='wiki'),
+        url(r'^wiki/$', wiki.wiki, name='wiki'),
+        url(r'^wiki/add/$', wiki.add, name='wiki_add'),
     ], None, None))
 
 ]

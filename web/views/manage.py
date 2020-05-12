@@ -22,5 +22,4 @@ def file(request, project_id):
     return render(request, 'dashboard.html')
 
 
-def wiki(request, project_id):
-    return render(request, 'wiki.html')
+
