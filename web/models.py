@@ -86,6 +86,8 @@ class Project(models.Model):
     join_count = models.SmallIntegerField(verbose_name='参与项目人数', default=1)
     creator = models.ForeignKey(to='UserInfo', verbose_name='项目创建者')
     create_datetime = models.DateTimeField(auto_now_add=True, verbose_name='项目创建时间')
+    bucket = models.CharField(verbose_name='cos桶', max_length=128)
+    region = models.CharField(verbose_name='cos区域', max_length=32)
 
     def __str__(self):
         return self.name

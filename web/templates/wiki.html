@@ -1,5 +1,7 @@
 {% extends 'layout/manage.html' %}
+{% load static %}
 {% block css %}
+    <link rel="stylesheet" href="{% static 'web/plugin/editor.md/css/editormd.preview.min.css' %}">
     <style>
         .panel-default {
             margin-top: 10px;
@@ -19,6 +21,15 @@
         .title_list {
             border-right: 1px solid #dddddd;
             min-height: 600px;
+        }
+
+        .title_list ul {
+            padding-left: 15px;
+        }
+
+        .title_list ul a {
+            display: block;
+            padding: 5px 0;
         }
 
         .content {
@@ -50,10 +61,12 @@
                                                          aria-hidden="true"></i> 新建
                     </a>
                     {% if wiki_obj %}
-                        <a href="{% url 'wiki_edit' project_id=request.tracer.project.id wiki_id=wiki_obj.id %}" type="button" class="btn btn-primary btn-xs">
+                        <a href="{% url 'wiki_edit' project_id=request.tracer.project.id wiki_id=wiki_obj.id %}"
+                           type="button" class="btn btn-primary btn-xs">
                             <i class="fa fa-edit" aria-hidden="true"></i> 编辑
                         </a>
-                        <a href="#" type="button" class="btn btn-danger btn-xs">
+                        <a href="{% url 'wiki_delete' project_id=request.tracer.project.id wiki_id=wiki_obj.id %}"
+                           type="button" class="btn btn-danger btn-xs">
                             <i class="fa fa-trash" aria-hidden="true"></i> 删除
                         </a>
 
@@ -73,11 +86,15 @@
                     <div class="add_wiki">
                         {% if wiki_obj %}
                             {{ wiki_obj.title }}
+                            <div id="test-markdown-view">
+                                <textarea style="display:none;">{{ wiki_obj.content }}</textarea>
+                            </div>
                         {% else %}
-                        <h4><{{ request.tracer.project }}>wiki文档库</h4>
-                        <a href="{% url 'wiki_add' project_id=request.tracer.project.id %}"><i class="fa fa-plus-circle"
-                                                                                               aria-hidden="true"></i>
-                            新建文章</a>
+                            <h4><{{ request.tracer.project }}>wiki文档库</h4>
+                            <a href="{% url 'wiki_add' project_id=request.tracer.project.id %}"><i
+                                    class="fa fa-plus-circle"
+                                    aria-hidden="true"></i>
+                                新建文章</a>
                         {% endif %}
                     </div>
                 </div>
@@ -86,9 +103,13 @@
     </div>
 {% endblock %}
 {% block js %}
+    <script src="{% static 'web/plugin/editor.md/editormd.js' %}"></script>
+    <script src="{% static 'web/plugin/editor.md/lib/marked.min.js' %}"></script>
+    <script src="{% static 'web/plugin/editor.md/lib/prettify.min.js' %}"></script>
     <script>
         $(function () {
-            sendajax()
+            sendajax();
+            initmarkdown_to_html();
         });
 
         function sendajax() {
@@ -103,7 +124,7 @@
                         $.each(res.data, function (index, item) {
                             var wiki_href = '?wiki_id=' + item.id;
 
-                            var li = $('<li>').attr('id', 'id_'+item.id).append($('<a>').text(item.title).attr('href', wiki_href)).append($('<ul>'));
+                            var li = $('<li>').attr('id', 'id_' + item.id).append($('<a>').text(item.title).attr('href', wiki_href)).append($('<ul>'));
 
                             if (item.parent) {
                                 $('#id_' + item.parent).children('ul').append(li)
@@ -116,6 +137,13 @@
                     }
                 }
             })
+        }
+
+        function initmarkdown_to_html() {
+
+            editormd.markdownToHTML("test-markdown-view", {
+                htmlDecode: "style,script,iframe"
+            });
         }
     </script>
 {% endblock %}

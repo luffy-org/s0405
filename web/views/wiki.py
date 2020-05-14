@@ -2,8 +2,11 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
+from utils.Tencent.Cos import upload_file
+from utils.encrypt import uid
 from web.forms.wiki import WikiModelForm, WikiEditModelForm
 from web.models import Wiki
+from django.views.decorators.csrf import csrf_exempt
 
 
 def wiki(request, project_id):
@@ -45,6 +48,9 @@ def wiki_order(request, project_id):
 def wiki_edit(request, project_id, wiki_id):
     """编辑wiki"""
     wiki_obj = Wiki.objects.filter(pk=wiki_id, project=project_id).first()
+    url = reverse('wiki', kwargs={'project_id': project_id})
+    if not wiki_obj:
+        return redirect(url)
     if request.method == 'GET':
         form = WikiEditModelForm(request, wiki_id, instance=wiki_obj)
         return render(request, 'wiki_add.html', {'forms': form})
@@ -61,7 +67,42 @@ def wiki_edit(request, project_id, wiki_id):
             form.instance.depth = 1
         form.instance.project = request.tracer.project
         form.save()
-        url = reverse('wiki', kwargs={'project_id': project_id})
+
         return redirect(url)
 
     return render(request, 'wiki_add.html', {'forms': form})
+
+
+def wiki_delete(request, project_id, wiki_id):
+    """删除wiki"""
+    cancel = reverse('wiki', kwargs={'project_id': project_id})
+
+    if request.method == 'GET':
+        return render(request, 'wiki_delete.html', {'cancel': cancel})
+
+    wiki_obj = Wiki.objects.filter(pk=wiki_id, project_id=project_id)
+    wiki_obj.delete()
+    return redirect(cancel)
+
+
+@csrf_exempt
+def wiki_upload(request, project_id):
+    """wiki中上传文件"""
+
+    img_obj = request.FILES.get('editormd-image-file')
+    img_format = img_obj.name.rsplit('.')[-1]
+    img_key = '{}.{}'.format(uid(request.tracer.user.mobile_phone), img_format)
+    img_url = upload_file(
+        bucket=request.tracer.project.bucket,  # 该项目的储存桶
+        region=request.tracer.project.region,
+        key=img_key,
+        obj=img_obj
+    )
+    print('完成上传', img_url)
+    result = {
+        'success': 1,
+        'message': None,
+        'url': img_url
+
+    }
+    return JsonResponse(result)

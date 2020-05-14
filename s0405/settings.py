@@ -126,6 +126,9 @@ WHITE_REGEX_URL_LIST = [
     '/sms/login/'
 ]
 
+SecretId = 'local_settings里的设置'
+SecretKey = '和上面一样'
+
 try:
     from .local_settings import *
 except ImportError as e:
