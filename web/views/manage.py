@@ -18,8 +18,5 @@ def setting(request, project_id):
     return render(request, 'dashboard.html')
 
 
-def file(request, project_id):
-    return render(request, 'dashboard.html')
-
 
 

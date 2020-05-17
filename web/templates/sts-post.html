@@ -1,0 +1,61 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+
+{% block title %}
+    文件系统post
+{% endblock %}
+
+{% block content %}
+    <input type="file" id="file-selector" multiple>
+{% endblock %}
+{% block js %}
+    <script src="{% static 'web/plugin/cos-js-sdk-v5-0.5.22/dist/cos-js-sdk-v5.min.js' %}"></script>
+    <script>
+        var cos;
+
+        $(function () {
+            initcos();
+            bindChangeFileInput();
+        });
+
+        function initcos() {
+            cos = new COS({
+                getAuthorization: function (options, callback) {
+                    $.get('{% url 'sts_cam' project_id=request.tracer.project.id  %}', {}, function (data) {
+                        var credentials = data && data.credentials;
+                        if (!data || !credentials) return console.error('临时密码错误');
+                        callback({
+                            TmpSecretId: credentials.tmpSecretId,
+                            TmpSecretKey: credentials.tmpSecretKey,
+                            XCosSecurityToken: credentials.sessionToken,
+                            StartTime: data.startTime, //
+                            ExpiredTime: data.expiredTime,
+                        })
+                    })
+                }
+            })
+        }
+
+        // 监听所选文件
+        function bindChangeFileInput() {
+            $('#file-selector').change(function () {
+                var files = $(this)[0].files;
+                $.each(files, function (index, fileObject) {
+                    var filename = fileObject.name;
+                    cos.putObject({
+                        Bucket: '{{ request.tracer.project.bucket }}',
+                        Region: '{{ request.tracer.project.region }}',
+                        Key: filename,
+                        Body: fileObject,
+                        onProgress: function (progressData) {
+                            console.log('文件上传进度：', filename, JSON.stringify(progressData))
+                        }
+
+                    }, function (data, error) {
+                        console.log(data || error);
+                    })
+                })
+            })
+        }
+    </script>
+{% endblock %}

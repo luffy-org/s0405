@@ -1,0 +1,8 @@
+<ol class="breadcrumb">
+    <li><a href="#"><i class="fa fa-folder-open-o" aria-hidden="true"></i> 文件库</a></li>
+    {% if data_list %}
+        {% for data in data_list %}
+            <li><a href="#"><i class="fa fa-folder-open-o" aria-hidden="true"></i> {{ data.title }}</a></li>
+        {% endfor %}
+    {% endif %}
+</ol>

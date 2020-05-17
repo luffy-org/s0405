@@ -126,6 +126,25 @@ class Wiki(models.Model):
         db_table = verbose_name
         verbose_name_plural = verbose_name
 
+    def __str__(self):
+        return self.title
+
+
+class PorjectFile(models.Model):
+    title = models.CharField(verbose_name='文件夹名称', max_length=128)
+    project = models.ForeignKey(to='Project', verbose_name='关联的项目')
+    parent = models.ForeignKey(to='self', verbose_name='属于哪个文件', null=True, blank=True)
+    file_type_choice = ((1, '文件夹'), (2, '文件'))
+    file_type = models.SmallIntegerField(verbose_name='文件类型', choices=file_type_choice, default=1)
+    file_capacity = models.IntegerField(verbose_name='文件大小', null=True, blank=True)
+    key = models.CharField(verbose_name='COS中的名称', max_length=128, null=True, blank=True)
+    update_user = models.ForeignKey(to='UserInfo', verbose_name='更新者')
+    update_datetime = models.DateTimeField(auto_now=True, verbose_name='更新者')
+
+    class Meta:
+        verbose_name = '07-项目的文件表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name
 
     def __str__(self):
         return self.title

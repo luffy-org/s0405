@@ -1,0 +1,265 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+
+{% block title %}
+    文件系统
+{% endblock %}
+{% block css %}
+    <style>
+        .panel-default {
+            margin-top: 10px;
+        }
+
+        .panel-heading {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div>
+                    <ol class="breadcrumb">
+                        <li>
+                            <a href="{% url 'file' project_id=request.tracer.project.id %}">
+                                <i class="fa fa-folder-open-o" aria-hidden="true"></i>主目录{{ folder_id }}
+                            </a>
+                        </li>
+
+                        {% for menu in menu_list %}
+
+                            {% if menu.id == folder_id %}
+                                <li class="active">
+                                    <i class="fa fa-folder-open-o" aria-hidden="true"></i>{{ menu.title }}
+                                </li>
+
+                            {% else %}
+                                <li>
+                                    <a href="/manage/{{ request.tracer.project.id }}/file/?folder_id={{ menu.id }}">
+                                        <i class="fa fa-folder-open-o"
+                                           aria-hidden="true"></i>{{ menu.title }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ol>
+                </div>
+                <div>
+                    <a href="#" type="button"
+                       class="btn btn-success btn-xs"><i class="fa fa-plus-circle"
+                                                         aria-hidden="true"></i> 上传文件
+                    </a>
+
+                    <button class="btn btn-success btn-xs" id="add-folder">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 新建文件夹
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="panel-body">
+
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>文件大小</th>
+                        <th>更新者</th>
+                        <th>更新时间</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for file in file_query_set %}
+                        <tr>
+                            <td>
+                                <a href="/manage/{{ request.tracer.project.id }}/file/?folder_id={{ file.id }}">
+                                    <i class="fa fa-folder-open-o" aria-hidden="true"></i>{{ file.title }}
+                                </a>
+                            </td>
+                            {% if file.file_capacity %}
+                                <td>{{ file.file_capacity }}</td>
+                            {% else %}
+                                <td>--</td>
+                            {% endif %}
+                            <td>{{ file.update_user }}</td>
+                            <td>{{ file.update_datetime }}</td>
+                            <td>
+                                <a href="" class="btn btn-info btn-xs">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                </a>
+                                <a class="btn btn-danger btn-xs">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- 模态对话框 -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">新建文件夹</h4>
+                </div>
+                <div class="modal-body">
+                    <form novalidate>
+
+                        {% csrf_token %}
+                        {% for form in forms %}
+                            <div class="form-group">
+                                <label for="{{ form.id_for_label }}">{{ form.label }}</label>
+                                {{ form }}
+                                <span class="error-msg">{{ form.errors.0 }}</span>
+                            </div>
+                        {% endfor %}
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmit">创建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script src="{% static 'web/plugin/cos-js-sdk-v5-0.5.22/dist/cos-js-sdk-v5.min.js' %}"></script>
+    <!--
+    <script>
+        var Bucket = '{{ request.tracer.project.bucket }}';
+        var Region = '{{ request.tracer.project.region }}';
+        var cos = new COS({
+            getAuthorization: function (options, callback) {
+                var url = '{% url 'sts_cam' project_id=request.tracer.project.id  %}';
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.onload = function (event) {
+                    try {
+                        var data = JSON.parse(event.target.responseText);
+                        var credentials = data.credentials;
+                    } catch (event) {
+                    }
+                    if (!data || !credentials) return console.error('密码错误');
+                    callback({
+                        TmpSecretId: credentials.tmpSecretId,
+                        TmpSecretKey: credentials.tmpSecretKey,
+                        XCosSecurityToken: credentials.sessionToken,
+                        StartTime: data.startTime, //
+                        ExpiredTime: data.expiredTime, //
+                    });
+                };
+                xhr.send();
+            }
+        });
+
+        // 监听所选文件
+        document.getElementById('file-selector').onchange = function () {
+            var file = this.files[0];
+            if (!file) return;
+            cos.sliceUploadFile({
+                Bucket: Bucket,
+                Region: Region,
+                Key: file.name,
+                Body: file,
+                onHashProgress: function (progressData) {
+                    console.log('校验中', JSON.stringify(progressData));
+                },
+                onProgress: function (progressData){
+                    console.log('上传中', JSON.stringify(progressData));
+                },
+            }, function (err, data) {
+                console.log(err, data);
+            });
+        };
+    </script>
+
+这是js原生写法
+-->
+    <script>
+        var cos;
+
+        $(function () {
+            initcos();
+            bindChangeFileInput();
+        });
+
+        $('#add-folder').click(function () {
+            $('#myModal').modal('toggle')
+        });
+
+        $('#btnSubmit').click(function () {
+            $.ajax({
+                url: '{% url "file" project_id=request.tracer.project.id %}',
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': $("[name= 'csrfmiddlewaretoken']").val(),
+                    'title': $('#exampleInputEmail1').val(),
+                    'parent': '{{ folder_id }}'
+                },
+                success: function (res) {
+                    if (res.status) {
+                        location.reload()
+                    }
+                    else {
+                        $.each(res.errors, function (k, v) {
+                            $('#id_' + k).next().text(v[0])
+                        })
+                    }
+                }
+            })
+        });
+
+        function initcos() {
+            cos = new COS({
+                getAuthorization: function (options, callback) {
+                    $.get('{% url 'sts_cam' project_id=request.tracer.project.id  %}', {}, function (data) {
+                        var credentials = data && data.credentials;
+                        if (!data || !credentials) return console.error('临时密码错误');
+                        callback({
+                            TmpSecretId: credentials.tmpSecretId,
+                            TmpSecretKey: credentials.tmpSecretKey,
+                            XCosSecurityToken: credentials.sessionToken,
+                            StartTime: data.startTime, //
+                            ExpiredTime: data.expiredTime,
+                        })
+                    })
+                }
+            })
+        }
+
+        // 监听所选文件
+        function bindChangeFileInput() {
+            $('#file-selector').change(function () {
+                var files = $(this)[0].files;
+                $.each(files, function (index, fileObject) {
+                    var filename = fileObject.name;
+                    cos.putObject({
+                        Bucket: '{{ request.tracer.project.bucket }}',
+                        Region: '{{ request.tracer.project.region }}',
+                        Key: filename,
+                        Body: fileObject,
+                        onProgress: function (progressData) {
+                            console.log('文件上传进度：', filename, JSON.stringify(progressData))
+                        }
+
+                    }, function (data, error) {
+                        console.log(data || error);
+                    })
+                })
+            })
+        }
+    </script>
+{% endblock %}
