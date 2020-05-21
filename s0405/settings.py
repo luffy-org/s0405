@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app01.apps.App01Config',
-    'web.apps.WebConfig'
+    'web.apps.WebConfig',
+    'debug_toolbar.apps.DebugToolbarConfig'
 ]
 
 MIDDLEWARE = [
@@ -47,7 +48,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'web.middleware.auth.AuthMiddleware'
+    'web.middleware.auth.AuthMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 ROOT_URLCONF = 's0405.urls'

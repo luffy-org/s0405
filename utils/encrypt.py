@@ -1,6 +1,5 @@
 import hashlib
 import uuid
-
 from django.conf import settings
 
 

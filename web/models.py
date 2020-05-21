@@ -131,6 +131,7 @@ class Wiki(models.Model):
 
 
 class PorjectFile(models.Model):
+    """项目之文件的表"""
     title = models.CharField(verbose_name='文件夹名称', max_length=128)
     project = models.ForeignKey(to='Project', verbose_name='关联的项目')
     parent = models.ForeignKey(to='self', verbose_name='属于哪个文件', null=True, blank=True)

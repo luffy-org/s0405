@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
-
 from web.views import account, home, project, manage, wiki, file
+
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
     url(r'^api/send_msg/$', account.send_msg),
@@ -24,9 +24,8 @@ urlpatterns = [
         url(r'^wiki/order/$', wiki.wiki_order, name='wiki_order'),
         url(r'^wiki/upload/$', wiki.wiki_upload, name='wiki_upload'),
         url(r'^file/$', file.file, name='file'),
-        url(r'^file/edit/$', file.file_edit, name='file_edit'),
-        url(r'^file/post$', file.file_post, name='file_post'),
         url(r'^file/sts-cam/$', file.sts_cam, name='sts_cam'),
+        url(r'^file/delete/$', file.file_delete, name='file_delete')
     ], None, None))
 
 ]

@@ -1,3 +1,5 @@
+import time
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 
@@ -30,7 +32,7 @@ def list_project(request):
 
     form = ProjectModelForm(request, data=request.POST)
     if form.is_valid():
-        bucket = '{}-1300310288'.format(request.tracer.user.mobile_phone)
+        bucket = '{}-{}-1300310288'.format(request.tracer.user.mobile_phone, str(int(time.time())))
         region = 'ap-guangzhou'
         create_bucket(bucket, region) # 为每个项目创建存储桶
         project_obj = form.save(commit=False)
