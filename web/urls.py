@@ -25,7 +25,8 @@ urlpatterns = [
         url(r'^wiki/upload/$', wiki.wiki_upload, name='wiki_upload'),
         url(r'^file/$', file.file, name='file'),
         url(r'^file/sts-cam/$', file.sts_cam, name='sts_cam'),
-        url(r'^file/delete/$', file.file_delete, name='file_delete')
+        url(r'^file/delete/$', file.file_delete, name='file_delete'),
+        url(r'^file/file_add/$', file.file_add, name='file_add')
     ], None, None))
 
 ]

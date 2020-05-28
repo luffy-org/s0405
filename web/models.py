@@ -30,8 +30,8 @@ class PricePolicy(models.Model):
     price = models.PositiveIntegerField(verbose_name='价格')
     project_length = models.PositiveSmallIntegerField(verbose_name='创建项目个数')
     team_member = models.PositiveSmallIntegerField(verbose_name='项目成员个数')
-    project_capacity = models.IntegerField(verbose_name='项目空间')
-    single_file_capacity = models.IntegerField(verbose_name='单文件最大容量')
+    project_capacity = models.IntegerField(verbose_name='项目空间', help_text='GB')
+    single_file_capacity = models.IntegerField(verbose_name='单文件最大容量', help_text='MB')
     create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
@@ -81,7 +81,7 @@ class Project(models.Model):
     name = models.CharField(verbose_name='项目名称', max_length=64)
     color = models.SmallIntegerField(choices=color_choice, verbose_name='颜色', default=1)
     desc = models.CharField(verbose_name='项目描述', max_length=255, null=True, blank=True)
-    use_space = models.IntegerField(verbose_name='项目已使用空间', default=0)
+    use_space = models.BigIntegerField(verbose_name='项目已使用空间', default=0, help_text='字节B')
     star = models.BooleanField(verbose_name='星标项目', default=False)
     join_count = models.SmallIntegerField(verbose_name='参与项目人数', default=1)
     creator = models.ForeignKey(to='UserInfo', verbose_name='项目创建者')
@@ -138,6 +138,7 @@ class PorjectFile(models.Model):
     file_type_choice = ((1, '文件夹'), (2, '文件'))
     file_type = models.SmallIntegerField(verbose_name='文件类型', choices=file_type_choice, default=1)
     file_capacity = models.IntegerField(verbose_name='文件大小', null=True, blank=True)
+    file_path = models.CharField(max_length=255, verbose_name='文件url', null=True, blank=True)
     key = models.CharField(verbose_name='COS中的名称', max_length=128, null=True, blank=True)
     update_user = models.ForeignKey(to='UserInfo', verbose_name='更新者')
     update_datetime = models.DateTimeField(auto_now=True, verbose_name='更新者')

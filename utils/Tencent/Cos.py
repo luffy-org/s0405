@@ -1,5 +1,6 @@
 from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
+from sts.sts import Sts
 from s0405 import settings
 
 
@@ -38,6 +39,32 @@ def create_bucket(bucket, region='ap-guangzhou'):
         }
     )
 
+def credential(bucket, region):
+    """获取临时凭证"""
+    config = {
+        # 临时密钥有效时长，单位是秒
+        'duration_seconds': 1800,
+        'secret_id': settings.SecretId,
+        'secret_key': settings.SecretKey,
+        'bucket': bucket,
+        'region': region,
+        'allow_prefix': '*',
+        # allow-actions: 权限
+        'allow_actions': [
+            # 简单上传
+            'name/cos:PutObject',
+            'name/cos:PostObject',
+            # 分片上传
+            'name/cos:InitiateMultipartUpload',
+            'name/cos:ListMultipartUploads',
+            'name/cos:ListParts',
+            'name/cos:UploadPart',
+            'name/cos:CompleteMultipartUpload'
+        ]
+    }
+    sts = Sts(config)
+    response = sts.get_credential()
+    return response
 
 def upload_file(bucket, region, key, obj):
     """
@@ -82,4 +109,12 @@ def delete_object_list(bucket, delete_list, region='ap-guangzhou'):
             'Object': delete_list
         }
     )
+    return response
+
+
+def head_object(bucket, key, region='ap-guangzhou'):
+    """查询对象元数据"""
+    config = CosConfig(Region=region, SecretId=settings.SecretId, SecretKey=settings.SecretKey)
+    client = CosS3Client(config)
+    response = client.head_object(Bucket=bucket, Key=key)
     return response
