@@ -1,0 +1,39 @@
+{% extends 'layout/manage.html' %}
+
+
+{% block css %}
+    <style>
+        .panel-default {
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="col-sm-3">
+
+            <div class="panel panel-default">
+                <div class="panel-heading" style="background-color:transparent;font-weight: bold;">个人中心</div>
+
+                <ul class="list-group" style="border-radius: 0">
+                    <li class="list-group-item"><a href="">我的资料</a></li>
+                    <li class="list-group-item"><a href="">修改密码</a></li>
+                    <li class="list-group-item"><a
+                            href="{% url 'setting_delete' project_id=request.tracer.project.id %}">删除项目</a></li>
+                </ul>
+
+            </div>
+        </div>
+
+        <div class="col-sm-9">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-address-card-o" aria-hidden="true"></i>我的资料</div>
+                <div class="panel-body">
+                    <h4 style="text-align: center;">系统设置</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

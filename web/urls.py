@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from web.views import account, home, project, manage, wiki, file
+from web.views import account, home, project, manage, wiki, file, settings
 
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
@@ -12,11 +12,13 @@ urlpatterns = [
     url(r'^project/list/$', project.list_project, name='list_project'),
     url(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star, name='project_star'),
     url(r'^project/unstar/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_unstar, name='project_unstar'),
+    # 项目功能
     url(r'^manage/(?P<project_id>\d+)/', include([
         url(r'^dashboard/$', manage.dashboard, name='dashboard'),  # 项目详细页面
         url(r'^statistics/$', manage.statistics, name='statistics'),
         url(r'^issues/$', manage.issues, name='issues'),
-        url(r'^setting/$', manage.setting, name='setting'),
+        url(r'^setting/$', settings.setting, name='setting'),
+        url(r'^setting/delete/$', settings.setting_delete, name='setting_delete'),
         url(r'^wiki/$', wiki.wiki, name='wiki'),
         url(r'^wiki/add/$', wiki.wiki_add, name='wiki_add'),
         url(r'^wiki/edit/(?P<wiki_id>\d+)/$', wiki.wiki_edit, name='wiki_edit'),
@@ -26,7 +28,8 @@ urlpatterns = [
         url(r'^file/$', file.file, name='file'),
         url(r'^file/sts-cam/$', file.sts_cam, name='sts_cam'),
         url(r'^file/delete/$', file.file_delete, name='file_delete'),
-        url(r'^file/file_add/$', file.file_add, name='file_add')
+        url(r'^file/file_add/$', file.file_add, name='file_add'),
+        url(r'^file/download/(?P<file_id>\d+)/$', file.file_download, name='file_download')
     ], None, None))
 
 ]

@@ -1,10 +1,14 @@
 import json
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
+
 from utils.Tencent.Cos import delete_object, delete_object_list, credential
 from web.forms.file import FolderModelForm, FileModelForm
 from web.models import PorjectFile
 from django.views.decorators.csrf import csrf_exempt
+import requests
+from django.utils.encoding import escape_uri_path
 
 
 def file(request, project_id):
@@ -129,6 +133,7 @@ def file_delete(request, project_id):
         file_obj.delete()  # 在数据库中删除
         return JsonResponse({'status': True})
 
+
 @csrf_exempt
 def file_add(request, project_id):
     """前端完成上传后将文件相关信息发送过来进行校验，并写入数据库"""
@@ -159,10 +164,25 @@ def file_add(request, project_id):
             'title': instance.title,
             'size': instance.file_capacity,
             'update_user': instance.update_user.username,
-            'update_datetime': instance.update_datetime.strftime('%Y年%m月%d日 %H:%M')
+            'update_datetime': instance.update_datetime.strftime('%Y年%m月%d日 %H:%M'),
+            'download_url': reverse('file_download',
+                                 kwargs={'project_id': request.tracer.project.id, 'file_id': instance.id})
         }
         result['data'] = result_data
         return JsonResponse(result)
     print(form.errors)
     result['errors'] = '格式错误'
     return JsonResponse(result)
+
+
+def file_download(request, project_id, file_id):
+    """下载文件"""
+    download_obj = PorjectFile.objects.filter(project_id=project_id, id=file_id).first()
+    download_url = download_obj.file_path
+    print(download_url)
+    res = requests.get(download_url)
+    data = res.iter_content()
+    response = HttpResponse(data)
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment; filename={}'.format(escape_uri_path(download_obj.title))
+    return response

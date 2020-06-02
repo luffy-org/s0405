@@ -134,6 +134,10 @@
                                         <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                     </button>
                                 {% else %}
+                                    <a class="btn btn-primary btn-xs"
+                                       href="{% url 'file_download' project_id=request.tracer.project.id file_id=file.id %}">
+                                        <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                                    </a>
                                 {% endif %}
                                 <button class="btn btn-danger btn-xs" data-toggle="modal" data-target="#DeleteModal"
                                         data-pid="{{ file.id }}">
@@ -189,6 +193,9 @@
                     <td class="update-user"></td>
                     <td class="update_time"></td>
                     <td>
+                        <a class="btn btn-primary btn-xs download-file">
+                            <i class="fa fa-cloud-download" aria-hidden="true"></i>
+                        </a>
                         <button class="btn btn-danger btn-xs delete" data-toggle="modal" data-target="#DeleteModal">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
@@ -460,6 +467,7 @@
                                         file_tr.find('.file_capacity').text(ret.data.size);
                                         file_tr.find('.update-user').text(ret.data.update_user);
                                         file_tr.find('.update_time').text(ret.data.update_datetime);
+                                        file_tr.find('.download-file').attr('href', ret.data.download_url);
                                         file_tr.find('.delete').attr('data-pid', ret.data.id);
                                         $('#rowList').append(file_tr);
                                         tr.remove();

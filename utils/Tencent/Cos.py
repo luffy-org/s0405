@@ -2,6 +2,7 @@ from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
 from sts.sts import Sts
 from s0405 import settings
+from qcloud_cos.cos_exception import CosServiceError
 
 
 def create_bucket(bucket, region='ap-guangzhou'):
@@ -118,3 +119,47 @@ def head_object(bucket, key, region='ap-guangzhou'):
     client = CosS3Client(config)
     response = client.head_object(Bucket=bucket, Key=key)
     return response
+
+
+
+def delete_bucket(bucket, region='ap-guangzhou'):
+    """删除桶"""
+
+    # 查询对象列表一次性最多只能查询1000个，所有需要虚幻进行查询，将查询到的进行删除，无查询结果后再推出循环
+    config = CosConfig(Region=region, SecretId=settings.SecretId, SecretKey=settings.SecretKey)
+    client = CosS3Client(config)
+
+    # 循环去获取数据并删除数据
+    while True:
+        response_dict = client.list_objects(Bucket=bucket)  # 得到的结果中Contents才是查询数据
+        contents = response_dict.get('Contents', '')  # 储存桶为空的情况下获取不到Contents
+        if not contents:
+            break
+        # 制作删除api需要的数据结构
+        object_list = [{'Key': content['key']} for content in contents]
+        object_dict = {'Object': object_list, 'Quiet': 'true'}
+        # 删除查询到的数据
+        client.delete_objects(Bucket=bucket, Delete=object_dict)
+        if response_dict['IsTruncated'] == 'false':  # 如果没有被截断 退出循环
+            break
+
+    # 循环获取碎片，并删除
+    while True:
+        multipart_dict = client.list_multipart_uploads(Bucket=bucket)
+        uploads = multipart_dict.get('Upload', '')
+        if not uploads:
+            break
+
+        for upload in uploads:
+            # 删除碎片
+            client.abort_multipart_upload(Bucket=bucket, Key=upload['Key'], UploadId=upload['UploadId'])
+        if multipart_dict['IsTruncated'] == 'false':
+            break
+
+    # 删除桶
+    client.delete_bucket(Bucket=bucket)
+
+
+
+
+
