@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 
 from utils.Tencent.Cos import create_bucket
 from web.forms.project import ProjectModelForm
-from web.models import Project, ProjectUser
+from web.models import Project, ProjectUser, IssuesType
 
 
 def list_project(request):
@@ -32,14 +32,25 @@ def list_project(request):
 
     form = ProjectModelForm(request, data=request.POST)
     if form.is_valid():
+        # 1. 为项目创建一个cos储存桶
         bucket = '{}-{}-1300310288'.format(request.tracer.user.mobile_phone, str(int(time.time())))
         region = 'ap-guangzhou'
-        create_bucket(bucket, region) # 为每个项目创建存储桶
+        create_bucket(bucket, region)  # 为每个项目创建存储桶
+
+        # 2， 创建项目
         project_obj = form.save(commit=False)
         project_obj.creator = request.tracer.user
-        project_obj.bucket =bucket
-        project_obj.region =region
-        project_obj.save()
+        project_obj.bucket = bucket
+        project_obj.region = region
+        instance = project_obj.save()
+
+        # 3. 项目初始化创建一个问题类型
+        # 批量写入数据库
+        issues_type_object_list = []
+        for item in IssuesType.PROJECT_INIT_LIST:  # 循环默认的问题类型
+            issues_type_object_list.append(IssuesType(name=item, project=instance))
+        IssuesType.objects.bulk_create(issues_type_object_list)
+
         return JsonResponse({"status": True})
     return JsonResponse({"status": False, "error": form.errors})
 
@@ -66,6 +77,3 @@ def project_unstar(request, project_type, project_id):
         ProjectUser.objects.filter(project_id=project_id, user=user_obj).update(star=False)
         return redirect('list_project')
     return HttpResponse('取消星标错误')
-
-
-

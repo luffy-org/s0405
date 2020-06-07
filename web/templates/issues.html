@@ -1,10 +1,374 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'layout/manage.html' %}
+{% load static %}
+{% load issues %}
 
-</body>
-</html>
+{% block link %}
+    <link rel="stylesheet" href="{% static '/web/plugin/editor.md/css/editormd.min.css' %}">
+    <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-datepicker/css/bootstrap-datepicker.min.css' %}">
+    <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-select/css/bootstrap-select.min.css' %}">
+{% endblock %}
+
+{% block css %}
+    <style>
+        .panel-default {
+            margin-top: 20px;
+        }
+
+        .issue-list .number {
+            width: 100px;
+            text-align: right;
+        }
+
+        .issue-list .number a {
+            font-weight: 500;
+            padding: 0 10px;
+        }
+
+        .issue-list .issue .tags {
+            padding: 10px 0;
+        }
+
+        .issue-list .tags span {
+            margin-right: 20px;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .issue-list .tags span i {
+            padding: 0 5px;
+        }
+
+        .issue-list .issue .tags .type {
+            color: white;
+            padding: 1px 5px;
+            border-radius: 5px;
+            background-color: #dddddd;
+        }
+
+        .pd-0 {
+            padding: 0 !important;
+        }
+
+        .editormd-fullscreen {
+            z-index: 10001;
+        }
+    </style>
+{% endblock %}
+
+
+{% block title %}
+    issues
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid clearfix" style="padding: 20px 0;">
+        <div class="col-sm-3">
+
+            <div class="panel panel-default">
+                <div class="panel-heading" style="background-color:transparent;font-weight: bold;">个人中心</div>
+
+                <div class="panel-body">筛选选项</div>
+
+            </div>
+        </div>
+
+        <div class="col-sm-9">
+            <div class="panel panel-default">
+                <div class="panel-heading"><i class="fa fa-address-card-o" aria-hidden="true"></i>问题</div>
+                <div class="panel-body">
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                            data-target=".bs-example-modal-lg">新建问题
+                    </button>
+                    <a class="btn btn-info btn-sm" href="">邀请成员</a>
+                </div>
+                <table class="table">
+                    <tbody class="issue-list">
+                    {% for issue in issues %}
+                        <tr>
+                            <td class="number">
+                                <i class="fa fa-circle text-{{ issue.status }}"></i>
+                                <a target="_blank" href="">{% issues_index issue.id %}</a>
+                            </td>
+                            <td class="issue">
+                                <div>
+                                    <a target="_blank" href="{% url 'issues_detail' project_id=request.tracer.project.id issues_id=issue.id %}">{{ issue.title }}</a>
+                                </div>
+                                <div class="tags">
+                                    <!-- 问题的类型 -->
+                                    <span class="type">{{ issue.issues_type }}</span>
+
+                                    <!-- 问题的状态 -->
+                                    <span>
+                                        <i class="fa fa-refresh" aria-hidden="true"></i>{{ issue.get_status_display }}
+                                    </span>
+
+                                    <!-- 问题的创建者-->
+
+                                    <!-- 如果有问题指派则显示问题指派-->
+                                    {% if issue.assign %}
+                                        <span>
+                                            <i class="fa fa-hand-o-right" aria-hidden="true"></i>{{ issue.assign }}
+                                        </span>
+                                    {% endif %}
+
+                                    <span>
+                                        <i class="fa fa-user-o" aria-hidden="true"></i>{{ issue.creator }}
+                                    </span>
+
+
+                                    <!-- 如果有问题的结束时间，就显示 -->
+                                    {% if issue.end_date %}
+                                        <span>
+                                        <i class="fa fa-calendar" aria-hidden="true"></i>{{ issue.end_date }}
+                                    </span>
+
+                                    {% endif %}
+                                    <!-- 问题的更新时间 -->
+                                    <span>
+                                        <i class="fa fa-clock-o"
+                                           aria-hidden="true"></i>{{ issue.latest_update_datetime }}
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-lg">
+                    {{ page_html | safe }}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+
+    <div class="modal fade bs-example-modal-lg" id="descModal" tabindex="-1" role="dialog"
+         aria-labelledby="myLargeModalLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    新建问题
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+
+                </div>
+
+                <div class="modal-body" style="padding-right: 40px;">
+                    <form id="addform" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ forms.title.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.title.label }}</label>
+                            <div class="col-sm-10">
+                                {{ forms.title }}
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ forms.issues_type.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.issues_type.label }}</label>
+                            <div class="col-sm-10">
+                                {{ forms.issues_type }}
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ forms.issues_model.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.issues_model.label }}</label>
+                            <div class="col-sm-10">
+                                {{ forms.issues_model }}
+                                <span class="error-msg"></span>
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ forms.desc.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.desc.label }}</label>
+                            <div class="col-sm-10">
+                                <div id="mdeditor">
+                                    {{ forms.desc }}
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.status.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.status.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.status }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.level.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.level.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.level }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.assign.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.assign.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.assign }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.attention.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.attention.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.attention }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.start_date.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.start_date.label }}</label>
+                                <div class="col-sm-8">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                        </span>
+                                        {{ forms.start_date }}
+                                    </div>
+                                    <span class="error-msg"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.end_date.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.end_date.label }}</label>
+                                <div class="col-sm-8">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-calendar-o"
+                                                                           aria-hidden="true"></i></span>
+                                        {{ forms.end_date }}
+                                    </div>
+                                    <span class="error-msg"></span>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.mode.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.mode.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.mode }}
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.parent.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.parent.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.parent }}
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="addissues">新建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block js %}
+    <script src="{% static '/web/plugin/editor.md/editormd.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            initmodal();
+            initdatepicker();
+            addissues();
+
+
+        });
+
+        /*
+        点击创建问题按钮
+        */
+
+        function addissues() {
+            $('#addissues').click(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: location.href,
+                    data: $('#addform').serialize(),
+                    success: function (ret) {
+                        console.log(ret);
+                        if (ret.status) {
+                            location.reload()
+                        }
+                        else {
+                            console.log(ret.error);
+                            $.each(ret.error, function (k, v) {
+                                console.log(v);
+                                $('#id_' + k).parent().next('.error-msg').text(v[0])
+                            })
+
+                        }
+                    }
+                })
+            })
+        }
+
+        /*
+        点击模态框触发方法
+         */
+        function initmodal() {
+            $('#descModal').on('shown.bs.modal', function (event) {
+                var modal = $(this);
+                modal.find('.error-msg').empty();
+                initeditor();
+            })
+        }
+
+        /*
+        初始化下拉选择框
+         */
+        function initdatepicker() {
+            $('#id_start_date, #id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '-30d',
+                language: 'zh-CN',
+                autoclose: true
+            })
+        }
+
+        /*
+        初始化模态框
+         */
+        function initeditor() {
+            editormd("mdeditor", {
+                placeholder: "请输入内容",
+                height: 300,
+                path: "{% static 'web/plugin/editor.md/lib/' %}"
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from web.views import account, home, project, manage, wiki, file, settings
+from web.views import account, home, project, manage, wiki, file, settings, issues
 
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
@@ -16,7 +16,9 @@ urlpatterns = [
     url(r'^manage/(?P<project_id>\d+)/', include([
         url(r'^dashboard/$', manage.dashboard, name='dashboard'),  # 项目详细页面
         url(r'^statistics/$', manage.statistics, name='statistics'),
-        url(r'^issues/$', manage.issues, name='issues'),
+        url(r'^issues/$', issues.issues, name='issues'),
+        url(r'^issues/detail/(?P<issues_id>\d+)/$', issues.issues_detail, name='issues_detail'),
+        url(r'^issues/detail/(?P<issues_id>\d+)/reply/$', issues.issues_reply, name='issues_reply'),
         url(r'^setting/$', settings.setting, name='setting'),
         url(r'^setting/delete/$', settings.setting_delete, name='setting_delete'),
         url(r'^wiki/$', wiki.wiki, name='wiki'),

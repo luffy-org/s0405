@@ -150,3 +150,92 @@ class PorjectFile(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Issues(models.Model):
+    """项目问题表"""
+    project = models.ForeignKey(to='Project', verbose_name='关联的项目')
+    title = models.CharField(max_length=64, verbose_name='问题标题')
+    desc = models.TextField(verbose_name='问题描述')
+    issues_type = models.ForeignKey(to='IssuesType', verbose_name='问题属于哪个类型')
+    issues_model = models.ForeignKey(to='IssuesModel', verbose_name='问题属于哪个模块', null=True, blank=True)
+    status_choice = (
+        (1, '处理中'),
+        (2, '已解决'),
+        (3, '新建'),
+        (4, '已忽略'),
+        (5, '待反馈'),
+        (6, '已关闭'),
+        (7, '重新打开'),
+    )
+    status = models.IntegerField(choices=status_choice, verbose_name='问题状态', default=1)
+    # 使用字符串是为了在前端中可以和类名进行拼接
+    level_choice = (('success', '普通'), ('warning', '紧急'), ('danger', '非常紧急'))
+    level = models.CharField(choices=level_choice, max_length=12, verbose_name='问题优先级', default='danger')
+
+    assign = models.ForeignKey(to='UserInfo', verbose_name='问题指派', null=True, blank=True, related_name='issues_assign')
+    attention = models.ManyToManyField(to='UserInfo', verbose_name='问题关注者', blank=True, related_name='issues_attention')
+    start_date = models.DateField(verbose_name='开始时间', null=True, blank=True)
+    end_date = models.DateField(verbose_name='结束时间', null=True, blank=True)
+    mode_choices = (
+        (1, '公开模式'),
+        (2, '隐私模式'),
+    )
+    mode = models.SmallIntegerField(verbose_name='模式', choices=mode_choices, default=1)
+    parent = models.ForeignKey(verbose_name='父问题', to='self', related_name='child', null=True, blank=True,
+                               on_delete=models.SET_NULL)
+    creator = models.ForeignKey(verbose_name='创建者', to='UserInfo', related_name='create_problems')
+
+    create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    latest_update_datetime = models.DateTimeField(verbose_name='最后更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '08-项目的问题表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name
+
+
+class IssuesType(models.Model):
+    """问题类型表"""
+    PROJECT_INIT_LIST = ["任务", '功能', 'Bug']
+    name = models.CharField(max_length=32, verbose_name='问题类型')
+    project = models.ForeignKey(to='Project', verbose_name='关联的项目')
+
+    class Meta:
+        verbose_name = '09-问题表的类型表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.name
+
+
+class IssuesModel(models.Model):
+    """问题的模块(里程碑)"""
+    name = models.CharField(max_length=32, verbose_name='问题模块')
+    project = models.ForeignKey(to='Project', verbose_name='关联的项目')
+
+    class Meta:
+        verbose_name = '10-问题表的里程碑表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name
+
+
+class IssuesReply(models.Model):
+    """问题评论、操作记录表"""
+    reply_type_choice = (
+        (1, '操作记录'),
+        (2, '回复'),
+        (3, '评论')
+    )
+    reply_type = models.IntegerField(choices=reply_type_choice, verbose_name='类型')
+    issues = models.ForeignKey(to='Issues', verbose_name='问题')
+    content = models.TextField(verbose_name='描述')
+    creator = models.ForeignKey(to='UserInfo', verbose_name='创建者')
+    create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    parent_reply = models.ForeignKey(to='self', verbose_name='父评论', null=True, blank=True)
+
+    class Meta:
+        verbose_name = '11-问题的评论表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name

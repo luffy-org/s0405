@@ -1,0 +1,397 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static '/web/plugin/editor.md/css/editormd.min.css' %}">
+    <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-datepicker/css/bootstrap-datepicker.min.css' %}">
+    <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <style>
+        .panel-default {
+            margin-top: 20px;
+        }
+
+        .comment-list .item {
+            margin-top: 20px;
+        }
+
+        .comment-list .left-avatar {
+            float: left;
+            margin-right: 10px;
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background-color: #304659;
+            color: white;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+        }
+
+        .comment-list .right-info {
+            padding-left: 35px;
+        }
+
+        .comment-list .right-info .desc .msg {
+            display: inline-block;
+            padding-right: 20px;
+            color: #8c8c8c;
+        }
+
+        .comment-list .child {
+            padding-left: 55px;
+        }
+
+        #comment-text .reply-user {
+            display: inline-block;
+            background-color: #ddd;
+            color: black;
+            padding: 6px 8px;
+            margin-left: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+{% block title %}
+    详细问题
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid clearfix">
+        <div class="col-sm-7">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div>
+                        <i class="fa fa-edit" aria-hidden="true"></i>更新问题
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <form id="addform" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ forms.title.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.title.label }}</label>
+                            <div class="col-sm-10">
+                                {{ forms.title }}
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ forms.issues_type.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.issues_type.label }}</label>
+                            <div class="col-sm-10">
+                                {{ forms.issues_type }}
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ forms.issues_model.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.issues_model.label }}</label>
+                            <div class="col-sm-10">
+                                {{ forms.issues_model }}
+                                <span class="error-msg"></span>
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ forms.desc.id_for_label }}"
+                                   class="col-sm-2 control-label">{{ forms.desc.label }}</label>
+                            <div class="col-sm-10">
+                                <div id="mdeditor">
+                                    {{ forms.desc }}
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <span class="error-msg"></span>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.status.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.status.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.status }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.level.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.level.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.level }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.assign.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.assign.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.assign }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.attention.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.attention.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.attention }}
+                                    <span class="error-msg"></span>
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.start_date.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.start_date.label }}</label>
+                                <div class="col-sm-8">
+                                    <div class="input-group">
+                                        <span class="input-group-addon">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                        </span>
+                                        {{ forms.start_date }}
+                                    </div>
+                                    <span class="error-msg"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.end_date.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.end_date.label }}</label>
+                                <div class="col-sm-8">
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><i class="fa fa-calendar-o"
+                                                                           aria-hidden="true"></i></span>
+                                        {{ forms.end_date }}
+                                    </div>
+                                    <span class="error-msg"></span>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.mode.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.mode.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.mode }}
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="col-md-6 pd-0">
+                                <label for="{{ forms.parent.id_for_label }}"
+                                       class="col-sm-2 control-label">{{ forms.parent.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ forms.parent }}
+                                </div>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- 评论去 -->
+        <div class="col-sm-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-search" aria-hidden="true"></i>操作记录
+                </div>
+                <div class="panel-body">
+                    <div class="comment-list">
+
+                    </div>
+                    <hr>
+                    <div id="comment-text">
+                        <div class="form-group">
+                            <textarea id="content" cols="30" rows="6" class="form-control"
+                                      placeholder="请输入要回复的内容"></textarea>
+                            <span class="error-msg"></span>
+                        </div>
+                        <input type="button" class="btn btn-primary" id="btnSubmit" value="提交">
+                        <div class="reply-user hide" id="replyUser">
+                            回复 <span></span>
+                            <i class="fa fa-times-circle" aria-hidden="true" style="color: #9d9d9d;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="hide" id="recordTmp">
+        <div class="item clearfix">
+            <div class="left-avatar"></div>
+            <div class="right-info">
+                <pre></pre>
+                <div class="desc">
+                    <div class="msg">
+                        <i class="fa fa-bullhorn" aria-hidden="true"></i>
+                        <span class="type"></span>
+                    </div>
+                    <div class="msg">
+                        <i class="fa fa-user-o" aria-hidden="true"></i>
+                        <span class="user"></span>
+                    </div>
+                    <div class="msg">
+                        <i class="fa fa-clock-o" aria-hidden="true"></i>
+                        <span class="date"></span>
+                    </div>
+                    <a href="#comment-text" class="reply">
+                        <i class="fa fa-comment-o" aria-hidden="true"></i> 回复
+                    </a>
+
+                </div>
+            </div>
+            <div class="child">
+
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block js %}
+    <script src="{% static '/web/plugin/editor.md/editormd.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-datepicker/js/bootstrap-datepicker.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static '/web/plugin/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
+    <script>
+        var ISSUES_RECORD_API = '{% url "issues_reply" project_id=request.tracer.project.id issues_id=issues_obj.id %}'
+
+        $(function () {
+            initdatepicker();
+            initeditor();
+            initIssuesRecord();
+            bindReply();
+            bindCancelReplyUser();
+            bindSubmit();
+        });
+
+        /*
+            初始化下拉选择框
+             */
+        function initdatepicker() {
+            $('#id_start_date, #id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                startDate: '-30d',
+                language: 'zh-CN',
+                autoclose: true
+            })
+        }
+
+        /*
+        初始化模态框
+         */
+        function initeditor() {
+            editormd("mdeditor", {
+                placeholder: "请输入内容",
+                height: 300,
+                path: "{% static 'web/plugin/editor.md/lib/' %}",
+                imageUpload: true,  // 应许文件上传
+                imageFormats: ["jpg", 'jpeg', 'png', 'gif'],  // 文件上传的格式
+                imageUploadURL: "{% url 'wiki_upload' project_id=request.tracer.project.id  %}", // 文件上传的后台地址
+                onload: function () {
+                    this.previewing();  // 加载的时候按照显示模式，而不是编辑模式
+                }
+            });
+        }
+
+        // 加载问题的评论
+        function initIssuesRecord() {
+            $.ajax({
+                url: ISSUES_RECORD_API,
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (res) {
+                    console.log(res);
+                    if (res.status) {
+
+                        $.each(res.data, function (index, item) {
+                            createRecordNode(item);  // 循环执行评价评论函数
+                        })
+
+                    }
+                    else {
+
+                    }
+                }
+            })
+        }
+
+        // 添加评判
+        function createRecordNode(retDict) {
+            var $item = $('#recordTmp').find('.item').clone();  // 克隆模版
+            $item.find('.left-avatar').html(retDict.creator[0].toUpperCase());  // 用户名称大写
+            $item.find('pre').html(retDict.content);  // 加载评论内容
+            $item.find('.user').text(retDict.creator);  // 加载评论者名称
+            $item.find('.type').text(retDict.reply_type);  // 加载评论类型
+            $item.find('.date').text(retDict.create_datetime);  // 加载评论时间
+            $item.attr({id: retDict.id, username: retDict.creator});  // 为每一条评论添加id和username属性
+            if (retDict.parent_reply) {
+                // 如果有父评论
+                $('#' + retDict.parent_reply).children('.child').append($item);
+
+            }
+            else {
+                $('.comment-list').append($item);
+            }
+
+
+        }
+
+        // 点击回复
+        function bindReply() {
+            $('.comment-list').on('click', '.reply', function () {
+                var $item = $(this).parent().parent().parent();  // 拿到每一条评论的父亲，里面有每条评论的ID和用户名
+                var id = $item.attr('id');
+                var username = $item.attr('username');
+                $('#replyUser').removeClass('hide').attr('parent-id', id).children('span').text(username);
+            })
+        }
+
+        // 取消回复
+        function bindCancelReplyUser() {
+            $('#replyUser').click(function () {
+                $(this).addClass('hide').removeAttr('parent-id').children('span').text('')
+            })
+        }
+
+        // 提交评论
+        function bindSubmit() {
+            $('#btnSubmit').click(function () {
+                $.ajax({
+                    url: ISSUES_RECORD_API,
+                    type: 'POST',
+                    dataType: 'JSON',
+                    data: {content: $('#content').val(), parent_reply: $('#replyUser').attr('parent-id')},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.status) {
+                            // 将评论加载到页面
+                            createRecordNode(res.data);  // 循环执行评价评论函数
+                            $('#content').val('');  // 将评论编辑区清空
+                            $('#replyUser').addClass('hide').removeAttr('parent-id').children('span').text('')  //如果是回复，也清空回复
+                        }
+                        else {
+                            $.each(res.error, function (i, v) {
+                                $('#content').next('span').text(v[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
+    </script>
+{% endblock %}
+
+
