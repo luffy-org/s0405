@@ -129,7 +129,65 @@ class Pagination(object):
 
         if self.all_count:
             tpl = "<li class='disabled'><a>共%s条数据，页码%s/%s页</a></li>" % (
-            self.all_count, self.current_page, self.pager_count,)
+                self.all_count, self.current_page, self.pager_count,)
+            page_list.append(tpl)
+        page_str = "".join(page_list)
+        return page_str
+
+    def page_ajax_html(self):
+
+        if self.all_count == 0:
+            return ""
+
+        if self.pager_count < self.pager_page_count:
+            pager_start = 1
+            pager_end = self.pager_count
+        else:
+            # 页码显示需要超过11页
+            # 如果当前页面是在5之前
+            if self.current_page <= self.half_pager_page_count:
+                pager_start = 1
+                pager_end = self.pager_page_count  # 1 2 .... 10 11
+            else:  # 如果当前页在5之后
+                # self.pager_count 是总页数
+                if (self.current_page + self.half_pager_page_count) > self.pager_count:  # 处于后面几页
+                    pager_end = self.pager_count
+                    pager_start = self.pager_count - self.pager_page_count + 1
+                else:
+                    pager_start = self.current_page - self.half_pager_page_count
+                    pager_end = self.current_page + self.half_pager_page_count
+
+        page_list = []
+
+        if self.current_page <= 1:
+            prev = '<li><a href="#">上一页</a></li>'
+        else:
+            self.query_params['page'] = self.current_page - 1
+            prev = '<li><a href="javascript:initpagination({})" type="button">上一页</a></li>'.format(
+                self.current_page - 1)
+
+        page_list.append(prev)
+
+        for i in range(pager_start, pager_end + 1):
+            # print('此时的i是{},而current_page是{}'.format(i, self.current_page))
+            if self.current_page == i:
+                tpl = '<li class="active"><a type="button">{}</a></li>'.format(i)
+            else:
+                tpl = '<li><a href="javascript:initpagination({})" type="button">{}</a></li>'.format(i, i)
+            page_list.append(tpl)
+
+        if self.current_page >= self.pager_count:
+            nex = '<li><a type="button">下一页</a></li>'
+
+        else:
+            self.query_params['page'] = self.current_page + 1
+            nex = '<li><a href="javascript:initpagination({})"  type="button">下一页</a></li>'.format(
+                self.current_page + 1)
+        page_list.append(nex)
+
+        if self.all_count:
+            tpl = "<li class='disabled'><a>共%s条数据，页码%s/%s页</a></li>" % (
+                self.all_count, self.current_page, self.pager_count,)
             page_list.append(tpl)
         page_str = "".join(page_list)
         return page_str

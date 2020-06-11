@@ -6,6 +6,12 @@
     <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-datepicker/css/bootstrap-datepicker.min.css' %}">
     <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-select/css/bootstrap-select.min.css' %}">
     <style>
+        .form-group .error-msg1 {
+            color: red;
+            padding-bottom: 10px;
+            font-size: 13px;
+        }
+
         .panel-default {
             margin-top: 20px;
         }
@@ -73,8 +79,9 @@
                                    class="col-sm-2 control-label">{{ forms.title.label }}</label>
                             <div class="col-sm-10">
                                 {{ forms.title }}
+                                <span class="error-msg1"></span>
                             </div>
-                            <span class="error-msg"></span>
+
                         </div>
 
                         <div class="form-group">
@@ -82,17 +89,16 @@
                                    class="col-sm-2 control-label">{{ forms.issues_type.label }}</label>
                             <div class="col-sm-10">
                                 {{ forms.issues_type }}
+                                <span class="error-msg1"></span>
                             </div>
-                            <span class="error-msg"></span>
                         </div>
                         <div class="form-group">
                             <label for="{{ forms.issues_model.id_for_label }}"
                                    class="col-sm-2 control-label">{{ forms.issues_model.label }}</label>
                             <div class="col-sm-10">
                                 {{ forms.issues_model }}
-                                <span class="error-msg"></span>
+                                <span class="error-msg1"></span>
                             </div>
-                            <span class="error-msg"></span>
                         </div>
                         <div class="form-group">
                             <label for="{{ forms.desc.id_for_label }}"
@@ -101,9 +107,9 @@
                                 <div id="mdeditor">
                                     {{ forms.desc }}
                                 </div>
-                                <span class="error-msg"></span>
+                                <span class="error-msg1"></span>
                             </div>
-                            <span class="error-msg"></span>
+
                         </div>
                         <div class="form-group">
                             <div class="col-md-6 pd-0">
@@ -111,18 +117,18 @@
                                        class="col-sm-2 control-label">{{ forms.status.label }}</label>
                                 <div class="col-sm-8">
                                     {{ forms.status }}
-                                    <span class="error-msg"></span>
+                                    <span class="error-msg1"></span>
                                 </div>
-                                <span class="error-msg"></span>
+
                             </div>
                             <div class="col-md-6 pd-0">
                                 <label for="{{ forms.level.id_for_label }}"
                                        class="col-sm-2 control-label">{{ forms.level.label }}</label>
                                 <div class="col-sm-8">
                                     {{ forms.level }}
-                                    <span class="error-msg"></span>
+                                    <span class="error-msg1"></span>
                                 </div>
-                                <span class="error-msg"></span>
+
                             </div>
                         </div>
                         <div class="form-group">
@@ -131,18 +137,17 @@
                                        class="col-sm-2 control-label">{{ forms.assign.label }}</label>
                                 <div class="col-sm-8">
                                     {{ forms.assign }}
-                                    <span class="error-msg"></span>
+                                    <span class="error-msg1"></span>
                                 </div>
-                                <span class="error-msg"></span>
                             </div>
                             <div class="col-md-6 pd-0">
                                 <label for="{{ forms.attention.id_for_label }}"
                                        class="col-sm-2 control-label">{{ forms.attention.label }}</label>
                                 <div class="col-sm-8">
                                     {{ forms.attention }}
-                                    <span class="error-msg"></span>
+                                    <span class="error-msg1"></span>
                                 </div>
-                                <span class="error-msg"></span>
+
                             </div>
                         </div>
                         <div class="form-group has-feedback">
@@ -156,7 +161,7 @@
                                         </span>
                                         {{ forms.start_date }}
                                     </div>
-                                    <span class="error-msg"></span>
+                                    <span class="error-msg1"></span>
                                 </div>
                             </div>
                             <div class="col-md-6 pd-0">
@@ -168,7 +173,7 @@
                                                                            aria-hidden="true"></i></span>
                                         {{ forms.end_date }}
                                     </div>
-                                    <span class="error-msg"></span>
+                                    <span class="error-msg1"></span>
                                 </div>
 
                             </div>
@@ -179,16 +184,17 @@
                                        class="col-sm-2 control-label">{{ forms.mode.label }}</label>
                                 <div class="col-sm-8">
                                     {{ forms.mode }}
+                                    <span class="error-msg1"></span>
                                 </div>
-                                <span class="error-msg"></span>
+
                             </div>
                             <div class="col-md-6 pd-0">
                                 <label for="{{ forms.parent.id_for_label }}"
                                        class="col-sm-2 control-label">{{ forms.parent.label }}</label>
                                 <div class="col-sm-8">
                                     {{ forms.parent }}
+                                    <span class="error-msg1"></span>
                                 </div>
-                                <span class="error-msg"></span>
                             </div>
                         </div>
 
@@ -206,6 +212,12 @@
                     <div class="comment-list">
 
                     </div>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination" id="pagination">
+
+                        </ul>
+                    </nav>
+
                     <hr>
                     <div id="comment-text">
                         <div class="form-group">
@@ -266,7 +278,8 @@
     <script src="{% static '/web/plugin/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
     <script src="{% static '/web/plugin/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
     <script>
-        var ISSUES_RECORD_API = '{% url "issues_reply" project_id=request.tracer.project.id issues_id=issues_obj.id %}'
+        var ISSUES_RECORD_API = '{% url "issues_reply" project_id=request.tracer.project.id issues_id=issues_obj.id %}';
+        var ISSUES_UPDATE_API = '{% url "issues_update" project_id=request.tracer.project.id issues_id=issues_obj.id %}';
 
         $(function () {
             initdatepicker();
@@ -275,6 +288,9 @@
             bindReply();
             bindCancelReplyUser();
             bindSubmit();
+            bindFormChange();
+
+
         });
 
         /*
@@ -290,21 +306,51 @@
         }
 
         /*
-        初始化模态框
+        初始化mdedit
          */
         function initeditor() {
-            editormd("mdeditor", {
+            testEditor = editormd("mdeditor", {
                 placeholder: "请输入内容",
                 height: 300,
                 path: "{% static 'web/plugin/editor.md/lib/' %}",
                 imageUpload: true,  // 应许文件上传
+                {#saveHTMLToTextarea : true,#}
                 imageFormats: ["jpg", 'jpeg', 'png', 'gif'],  // 文件上传的格式
                 imageUploadURL: "{% url 'wiki_upload' project_id=request.tracer.project.id  %}", // 文件上传的后台地址
+                toolbarIcons: function () {
+                    return ["bold", "hr", "del", "italic", "quote", "|", "image", "preview", "watch", "fullscreen", "||", "save"]
+                },
+                toolbarCustomIcons: {save: "<input type='button' value='保 存' class='btn btn-success btn-sm' onclick='saveDesc();' />"},
                 onload: function () {
                     this.previewing();  // 加载的时候按照显示模式，而不是编辑模式
                 }
             });
         }
+
+        /*
+        // test 评论加分页功能
+        function initpagination(index) {
+
+            $.ajax({
+                url: ISSUES_RECORD_API,
+                type: 'GET',
+                data: {'page': index},
+                success: function (res) {
+                    if (res.status) {
+                        $('.comment-list').empty();  // 清楚之前页面
+                        $.each(res.data, function (index, item) {
+                            createRecordNode(item)
+                        })
+                    }
+                    else {
+
+                    }
+                }
+            })
+
+        }
+
+        */
 
         // 加载问题的评论
         function initIssuesRecord() {
@@ -313,12 +359,13 @@
                 type: 'GET',
                 dataType: 'JSON',
                 success: function (res) {
-                    console.log(res);
+                    // console.log(res);
                     if (res.status) {
 
                         $.each(res.data, function (index, item) {
                             createRecordNode(item);  // 循环执行评价评论函数
-                        })
+                        });
+                        $('#pagination').append(res.page_html);
 
                     }
                     else {
@@ -328,7 +375,7 @@
             })
         }
 
-        // 添加评判
+        // 添加评论
         function createRecordNode(retDict) {
             var $item = $('#recordTmp').find('.item').clone();  // 克隆模版
             $item.find('.left-avatar').html(retDict.creator[0].toUpperCase());  // 用户名称大写
@@ -337,6 +384,8 @@
             $item.find('.type').text(retDict.reply_type);  // 加载评论类型
             $item.find('.date').text(retDict.create_datetime);  // 加载评论时间
             $item.attr({id: retDict.id, username: retDict.creator});  // 为每一条评论添加id和username属性
+
+
             if (retDict.parent_reply) {
                 // 如果有父评论
                 $('#' + retDict.parent_reply).children('.child').append($item);
@@ -348,6 +397,9 @@
 
 
         }
+
+        // function createSonRecord()
+
 
         // 点击回复
         function bindReply() {
@@ -391,6 +443,43 @@
                 })
             })
         }
+
+        // 编辑问题触发事件
+        function bindFormChange() {
+
+            $('#addform').find('.form-control').change(function () {
+                var postDict = {name: $(this).attr('name'), value: $(this).val()};
+                sendPost(postDict)
+            })
+        }
+
+        // 编辑mdeditor触发事件
+        function saveDesc() {
+            var postDict = {name: $('#id_desc').attr('name'), value: $('#id_desc').val()};
+            sendPost(postDict)
+        }
+
+        // 发送编辑问题的ajax
+        function sendPost(dataDict) {
+            // dataDict是设计好的数据格式发送给后台，是用户进行修改的数据
+            $.ajax({
+                url: ISSUES_UPDATE_API,
+                type: 'POST',
+                headers: {"Content-Type": "application/json;charset=utf-8"},
+                data: JSON.stringify(dataDict),
+                dataType: 'JSON',
+                success: function (ret) {
+                    console.log(ret);
+                    if (ret.status) {
+                        createRecordNode(ret.data)
+                    }
+                    else {
+                        $('#id_' + dataDict.name).next('span').text(ret.error)
+                    }
+                }
+            })
+        }
+
     </script>
 {% endblock %}
 

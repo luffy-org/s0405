@@ -18,6 +18,7 @@ urlpatterns = [
         url(r'^statistics/$', manage.statistics, name='statistics'),
         url(r'^issues/$', issues.issues, name='issues'),
         url(r'^issues/detail/(?P<issues_id>\d+)/$', issues.issues_detail, name='issues_detail'),
+        url(r'^issues/update/(?P<issues_id>\d+)/$', issues.issues_update, name='issues_update'),
         url(r'^issues/detail/(?P<issues_id>\d+)/reply/$', issues.issues_reply, name='issues_reply'),
         url(r'^setting/$', settings.setting, name='setting'),
         url(r'^setting/delete/$', settings.setting_delete, name='setting_delete'),
