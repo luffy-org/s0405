@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{% static '/web/plugin/editor.md/css/editormd.min.css' %}">
     <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-datepicker/css/bootstrap-datepicker.min.css' %}">
     <link rel="stylesheet" href="{% static '/web/plugin/bootstrap-select/css/bootstrap-select.min.css' %}">
+    <link rel="stylesheet" href="{% static '/web/plugin/select2-4.1.0-beta.1/dist/css/select2.min.css' %}">
 {% endblock %}
 
 {% block css %}
@@ -52,6 +53,34 @@
         .editormd-fullscreen {
             z-index: 10001;
         }
+
+        .filter-area .item {
+            margin-bottom: 15px;
+        }
+
+        .filter-area .item .title {
+            padding: 5px 0;
+        }
+
+        .filter-area .item .check-list a {
+            text-decoration: none;
+            display: inline-block;
+            min-width: 65px;
+        }
+
+        .filter-area .item .check-list label {
+            font-weight: 200;
+            font-size: 13px;
+            margin-left: 3px;
+        }
+
+        .filter-area .item .check-list a:hover {
+            font-weight: 300;
+        }
+
+        .filter-area .item .check-list .cell {
+            margin-right: 10px;
+        }
     </style>
 {% endblock %}
 
@@ -65,10 +94,28 @@
         <div class="col-sm-3">
 
             <div class="panel panel-default">
-                <div class="panel-heading" style="background-color:transparent;font-weight: bold;">个人中心</div>
+                <div class="panel-heading">
+                    <i class="fa fa-search" aria-hidden="true"></i>筛选
+                </div>
 
-                <div class="panel-body">筛选选项</div>
+                <div class="panel-body filter-area">
+                    {% for row in filter_list %}
+                        <div class="item">
+                            <div class="title">{{ row.title }}</div>
+                            <div class="check-list">
+                                {% for item in row.data %}
+                                    {{ item }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="item">
+                        <div class="title">{{ row.title }}</div>
+                        <div class="check-list">
 
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -91,7 +138,8 @@
                             </td>
                             <td class="issue">
                                 <div>
-                                    <a target="_blank" href="{% url 'issues_detail' project_id=request.tracer.project.id issues_id=issue.id %}">{{ issue.title }}</a>
+                                    <a target="_blank"
+                                       href="{% url 'issues_detail' project_id=request.tracer.project.id issues_id=issue.id %}">{{ issue.title }}</a>
                                 </div>
                                 <div class="tags">
                                     <!-- 问题的类型 -->
@@ -300,12 +348,15 @@
     <script src="{% static '/web/plugin/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js' %}"></script>
     <script src="{% static '/web/plugin/bootstrap-select/js/bootstrap-select.min.js' %}"></script>
     <script src="{% static '/web/plugin/bootstrap-select/js/i18n/defaults-zh_CN.min.js' %}"></script>
+    <script src="{% static '/web/plugin/select2-4.1.0-beta.1/dist/js/select2.min.js' %}"></script>
+    <script src="{% static '/web/plugin/select2-4.1.0-beta.1/dist/js/i18n/zh-CN.js' %}"></script>
     <script type="text/javascript">
         $(function () {
             initmodal();
             initdatepicker();
             addissues();
-
+            bindClickCheckFilter();
+            initSelect2();
 
         });
 
@@ -370,5 +421,31 @@
                 path: "{% static 'web/plugin/editor.md/lib/' %}"
             });
         }
+
+        // checkbox选中实现a标签一样的效果
+        function bindClickCheckFilter() {
+            $('.filter-area').find(':checkbox').click(function () {
+                location.href = $(this).parent().attr('href')
+
+            })
+        }
+
+        // select2插件，与选中事件
+        function initSelect2() {
+            var $eventSelect = $('.js-example-basic-single');
+            $eventSelect.select2({
+                language: 'zh-CN'
+            });
+            $eventSelect.on("select2:select", function (e) {
+
+                location.href = e.params.data.id;
+            });
+            $eventSelect.on("select2:unselect", function (e) {
+                location.href = e.params.data.id;
+            })
+
+        }
     </script>
 {% endblock %}
+
+

@@ -1,30 +1,156 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
 
 from web.forms.issues import IssuseModelForm, IssuesReplyModelForm
-from web.models import Issues, IssuesReply, ProjectUser
+from web.models import Issues, IssuesReply, ProjectUser, IssuesType
 from utils.pagination import Pagination
 from django.views.decorators.csrf import csrf_exempt
 import json
 
 
+class CheckFilter:
+    """生成checkbox筛选按钮"""
+
+    def __init__(self, name, data_list, request):
+        self.name = name
+        self.data_list = data_list
+        self.request = request
+
+    def __iter__(self):
+        for item in self.data_list:
+            key = str(item[0])  # request.get出来的都是字符串
+            text = item[1]
+
+            value_list = self.request.GET.getlist(self.name)
+
+            if key in value_list:
+                ck = 'checked'
+                value_list.remove(key)
+            else:
+                ck = ''
+                value_list.append(key)
+
+            # value_list 已经完成了修改, 每个a标签添加了自己的参数
+            query_dict = self.request.GET.copy()
+            query_dict._mutable = True
+            # 将完成修改的url放入QueryDict中，追加到之前的参数里
+            query_dict.setlist(self.name, value_list)
+            # urlencode方法将QueryDict数据变成合法的url
+            if 'page' in query_dict:
+                query_dict.pop('page')
+            param_url = query_dict.urlencode()
+            if param_url:
+                url = '{}?{}'.format(self.request.path_info, param_url)
+
+            else:
+                url = self.request.path_info
+
+            tpl = '<a class="cell" href="{}"><input type="checkbox" {} /><label>{}</label></a>'.format(url, ck, text)
+            yield mark_safe(tpl)
+
+
+"""
+
+<select class="js-example-basic-single form-control" name="state[]" multiple>
+                                <option value="AL">阿里巴巴</option>
+                                
+                            </select>
+
+
+"""
+
+
+class SelectFilter:
+    """生成select筛选按钮"""
+
+    def __init__(self, name, data_list, request):
+        """
+        初始化方法
+        :param name:  用于在url中生成参数的key值
+        :param data_list:  数据库中的条件
+        :param request:    request
+        """
+        self.name = name
+        self.data_list = data_list
+        self.request = request
+
+    def __iter__(self):
+        """
+        迭代方法，前端中循环该对象会触发该方法
+        :return:  经过mark_safe的html内容，会在模版中渲染成按钮
+        """
+        yield mark_safe('<select class="js-example-basic-single form-control" name="state[]" multiple>')
+        """
+        [(7, 'CodeHeng'), (1, 'heng'), (8, 'fang')]
+        """
+        for user_info in self.data_list:
+            key = str(user_info[0])
+            username = user_info[1]
+            # 获取当前url中是否有相同条件的参数，考虑已经筛选的情况
+            value_list = self.request.GET.getlist(self.name)
+            if key in value_list:  # 当前条件已经有选中的
+                selected = 'selected'
+                value_list.remove(key)
+            else:
+                selected = ''
+                value_list.append(key)
+            query_dict = self.request.GET.copy()
+            query_dict._mutable = True
+            query_dict.setlist(self.name, value_list)
+            param_url = query_dict.urlencode()
+            if param_url:
+                url = '{}?{}'.format(self.request.path_info, param_url)
+            else:
+                url = self.request.path_info
+            html = '<option value="{url}" {selected}>{username}</option>'.format(url=url, selected=selected,
+                                                                                          username=username)
+            yield mark_safe(html)
+
+        yield mark_safe('</select>')
+
+
 def issues(request, project_id):
     """问题的列表页面"""
     if request.method == 'GET':
-        queryset = Issues.objects.filter(project=request.tracer.project)
+
+        # 1. 获取筛选条件
+        allow_filter_name = ['issues_type', 'issues_model', 'status', 'level', 'assign', 'attention', 'mode']
+        condition = {}
+        # 1.1 循环的去获取筛选条件
+        for item in allow_filter_name:
+            value_list = request.GET.getlist(item)
+            if value_list:
+                condition['{}__in'.format(item)] = value_list
+
+        queryset = Issues.objects.filter(project=request.tracer.project).filter(**condition)
         page_object = Pagination(
             current_page=request.GET.get('page'),  # 传入当前页码
             all_count=queryset.count(),  # 传入数据总数
             base_url=request.path_info,  # 传入基础URL，既不带参数的URL
             query_params=request.GET,  # 传入url中的get条件
-            per_page=2
+            per_page=5
         )
         issues_list = queryset[page_object.start: page_object.end]  # 根据分页来对总数据进行切片
         form = IssuseModelForm(request)
+        project_issues_type = IssuesType.objects.filter(project=request.tracer.project).values_list(
+            'id', 'name')
+        project_total_user = [(request.tracer.project.creator.pk, request.tracer.project.creator.username)]  # 项目创建者
+        project_user_queryset = ProjectUser.objects.filter(project_id=project_id).values_list('user__pk',
+                                                                                              'user__username')  # 按格式输出的参与该项目的用户ID和用户名
+        project_total_user.extend(project_user_queryset)
+        filter_list = [
+            {'title': '问题类型', 'data': CheckFilter('issues_type', project_issues_type, request)},
+            {'title': '问题状态', 'data': CheckFilter('status', Issues.status_choice, request)},
+            {'title': '问题优先级', 'data': CheckFilter('level', Issues.level_choice, request)},
+            {'title': '问题指派', 'data': SelectFilter('assign', project_total_user, request)},
+            {'title': '问题关注者', 'data': SelectFilter('attention', project_total_user, request)},
+        ]
         context = {
             'forms': form,
             'issues': issues_list,
-            'page_html': page_object.page_html()
+            'page_html': page_object.page_html(),
+            'filter_list': filter_list
         }
         return render(request, 'issues.html', context)
 
@@ -127,7 +253,6 @@ def issues_reply(request, project_id, issues_id):
         }
 
         return JsonResponse(context)
-    print(request.POST)
 
     form = IssuesReplyModelForm(data=request.POST)
     if form.is_valid():
@@ -181,7 +306,6 @@ def issues_update(request, project_id, issues_id):
     # 1. 获取前端传递过来的数据，因为是json所以需要先解码后在反序列化
 
     post_dict = json.loads(request.body.decode('utf-8'))
-    print('----', post_dict)
 
     """
     {'name': 'title', 'value': '什么时候去九点asdfe'}
@@ -294,9 +418,9 @@ def issues_update(request, project_id, issues_id):
 
         else:
 
-        # 1 拿到该项目的所有参与者
-        # 2。 将数据设计成字段， ID， username
-        # 3。 循环用户选择，判断用户选择是否在字段里
+            # 1 拿到该项目的所有参与者
+            # 2。 将数据设计成字段， ID， username
+            # 3。 循环用户选择，判断用户选择是否在字段里
             project_user_dict = {}
             project_user_list = ProjectUser.objects.filter(project_id=project_id)
             for item in project_user_list:
