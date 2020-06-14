@@ -126,7 +126,7 @@
                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
                             data-target=".bs-example-modal-lg">新建问题
                     </button>
-                    <a class="btn btn-info btn-sm" href="">邀请成员</a>
+                    <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#invite">邀请成员</button>
                 </div>
                 <table class="table">
                     <tbody class="issue-list">
@@ -188,10 +188,11 @@
                     {{ page_html | safe }}
                 </ul>
             </nav>
+
         </div>
     </div>
 
-
+    <!-- 新建问题模态框 -->
     <div class="modal fade bs-example-modal-lg" id="descModal" tabindex="-1" role="dialog"
          aria-labelledby="myLargeModalLabel">
         <div class="modal-dialog modal-lg" role="document">
@@ -339,6 +340,51 @@
             </div>
         </div>
     </div>
+
+    <!-- 邀请码模态框 -->
+    <div class="modal fade" tabindex="-1" id="invite" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">邀请成员</h4>
+                </div>
+                <div class="modal-body" style="padding-right: 40px;">
+                    <form id="inviteForm">
+                        {% csrf_token %}
+                        {% for item in invite_form %}
+                            <div class="form-group">
+                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                {{ item }}
+                                <span class="error-msg"></span>
+                            </div>
+                        {% endfor %}
+                        <button type="button" class="btn btn-success" id="bindInviteCode">生成邀请码</button>
+                    </form>
+                    <div class="hide" id="inviteArea">
+                        <hr>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-btn">
+                                    <input type="button" value="邀请链接" class="btn btn-default">
+                                </div>
+                                <input type="text" class="form-control" id="inviteUrl">
+                                <div class="input-group-btn">
+                                    <input type="button" value="复制链接" class="btn btn-primary" id="btnCopyUrl"
+                                           data-toggle="popover" data-content="链接已复制">
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 {% endblock %}
 
 
@@ -351,14 +397,58 @@
     <script src="{% static '/web/plugin/select2-4.1.0-beta.1/dist/js/select2.min.js' %}"></script>
     <script src="{% static '/web/plugin/select2-4.1.0-beta.1/dist/js/i18n/zh-CN.js' %}"></script>
     <script type="text/javascript">
+        var INVITE_URL = '{% url "issues_invite" project_id=request.tracer.project.id %}';
         $(function () {
             initmodal();
             initdatepicker();
             addissues();
             bindClickCheckFilter();
             initSelect2();
+            bindCreateInviteCode();
+            bindCopyUrl();
+            $('#btnCopyUrl').tooltip();
+
 
         });
+
+
+        // 点击按钮完成复制功能
+        function bindCopyUrl() {
+            $('#btnCopyUrl').popover({
+                // trigger: 'focus',
+                placement: 'bottom'
+            });
+
+            $('#btnCopyUrl').click(function () {
+                var urltext = $('#inviteUrl')[0];
+                urltext.select();  //选中内容
+                document.execCommand('Copy');
+
+
+            })
+        }
+
+        // 生成邀请码
+        function bindCreateInviteCode() {
+            $('#bindInviteCode').click(function () {
+                $.ajax({
+                    url: INVITE_URL,
+                    type: 'POST',
+                    data: $('#inviteForm').serialize(),
+                    success: function (res) {
+                        console.log(res);
+                        if (res.status) {
+                            $('#inviteArea').removeClass('hide').find('#inviteUrl').val(res.data);
+                        }
+                        else {
+                            $.each(res.error, function (k, v) {
+                                $('#id_' + k).next('.error-msg').text(v[0]);
+                            })
+                        }
+                    }
+                })
+            })
+        }
 
         /*
         点击创建问题按钮
@@ -397,6 +487,11 @@
                 modal.find('.error-msg').empty();
                 initeditor();
             })
+        }
+
+
+        function initInvitemodal() {
+
         }
 
         /*

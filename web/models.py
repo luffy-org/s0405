@@ -239,3 +239,24 @@ class IssuesReply(models.Model):
         verbose_name = '11-问题的评论表'
         db_table = verbose_name
         verbose_name_plural = verbose_name
+
+
+class ProjectInvite(models.Model):
+    """项目邀请码"""
+    project = models.ForeignKey(to='Project', verbose_name='关联的项目')
+    code = models.CharField(verbose_name='邀请码', max_length=128)
+    count = models.IntegerField(verbose_name='邀请码限制人数', null=True, blank=True, help_text='空则表示无限制人数')
+    user_count = models.IntegerField(verbose_name='已邀请人数', default=0)
+    period_choices = ((30, '30分钟'),
+                      (60, '1小时'),
+                      (300, '5小时'),
+                      (1440, '24小时')
+                      )
+    period = models.IntegerField(choices=period_choices, verbose_name='邀请码有效期', default=1440)
+    creator = models.ForeignKey(to='UserInfo', verbose_name='创建者')
+    create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '12-项目邀请码表'
+        db_table = verbose_name
+        verbose_name_plural = verbose_name

@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from web.views import account, home, project, manage, wiki, file, settings, issues
+from web.views import account, home, project, manage, wiki, file, settings, issues, dashboard
 
 urlpatterns = [
     url(r'^register/$', account.register, name='register'),
@@ -14,12 +14,13 @@ urlpatterns = [
     url(r'^project/unstar/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_unstar, name='project_unstar'),
     # 项目功能
     url(r'^manage/(?P<project_id>\d+)/', include([
-        url(r'^dashboard/$', manage.dashboard, name='dashboard'),  # 项目详细页面
+        url(r'^dashboard/$', dashboard.dashboard, name='dashboard'),  # 项目详细页面
         url(r'^statistics/$', manage.statistics, name='statistics'),
         url(r'^issues/$', issues.issues, name='issues'),
         url(r'^issues/detail/(?P<issues_id>\d+)/$', issues.issues_detail, name='issues_detail'),
         url(r'^issues/update/(?P<issues_id>\d+)/$', issues.issues_update, name='issues_update'),
         url(r'^issues/detail/(?P<issues_id>\d+)/reply/$', issues.issues_reply, name='issues_reply'),
+        url(r'^issues/invite/url/$', issues.issues_invite, name='issues_invite'),
         url(r'^setting/$', settings.setting, name='setting'),
         url(r'^setting/delete/$', settings.setting_delete, name='setting_delete'),
         url(r'^wiki/$', wiki.wiki, name='wiki'),
@@ -33,6 +34,7 @@ urlpatterns = [
         url(r'^file/delete/$', file.file_delete, name='file_delete'),
         url(r'^file/file_add/$', file.file_add, name='file_add'),
         url(r'^file/download/(?P<file_id>\d+)/$', file.file_download, name='file_download')
-    ], None, None))
+    ], None, None)),
+    url(r'^invite/join/(?P<code>\w+)/', issues.invite_join, name='invite_join')
 
 ]

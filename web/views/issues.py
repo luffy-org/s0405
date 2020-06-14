@@ -1,9 +1,13 @@
+import datetime
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from web.forms.issues import IssuseModelForm, IssuesReplyModelForm
-from web.models import Issues, IssuesReply, ProjectUser, IssuesType
+from utils.encrypt import uid
+from web.forms.issues import IssuseModelForm, IssuesReplyModelForm, ProjectInviteModelForm
+from web.models import Issues, IssuesReply, ProjectUser, IssuesType, OrderRecord, ProjectInvite, PricePolicy
 from utils.pagination import Pagination
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -104,7 +108,7 @@ class SelectFilter:
             else:
                 url = self.request.path_info
             html = '<option value="{url}" {selected}>{username}</option>'.format(url=url, selected=selected,
-                                                                                          username=username)
+                                                                                 username=username)
             yield mark_safe(html)
 
         yield mark_safe('</select>')
@@ -146,11 +150,15 @@ def issues(request, project_id):
             {'title': '问题指派', 'data': SelectFilter('assign', project_total_user, request)},
             {'title': '问题关注者', 'data': SelectFilter('attention', project_total_user, request)},
         ]
+
+        # 邀请码模态框
+        inviteform = ProjectInviteModelForm()
         context = {
             'forms': form,
             'issues': issues_list,
             'page_html': page_object.page_html(),
-            'filter_list': filter_list
+            'filter_list': filter_list,
+            'invite_form': inviteform
         }
         return render(request, 'issues.html', context)
 
@@ -439,3 +447,86 @@ def issues_update(request, project_id, issues_id):
                     res['data'] = info
 
     return JsonResponse(res)
+
+
+def issues_invite(request, project_id):
+    form = ProjectInviteModelForm(data=request.POST)
+    if form.is_valid():
+        if request.tracer.user != request.tracer.project.creator:
+            form.add_error('period', '无权创建邀请码')
+            return JsonResponse({'status': False, 'error': form.errors})
+
+        code = uid(request.tracer.user.mobile_phone)  # 生成一个随机码
+        form.instance.project = request.tracer.project
+        form.instance.code = code
+        form.instance.creator = request.tracer.user
+        form.save()
+
+        # 将邀请码生成url返回给用户
+        url = '{}://{}{}'.format(request.scheme, request.get_host(),
+                                 reverse('invite_join', kwargs={'code': code}))
+
+        return JsonResponse({'status': True, 'data': url})
+
+    return JsonResponse({'status': False, 'error': form.errors})
+
+
+def invite_join(request, code):
+    # 1 判断是否是项目创建者
+    current_datetime = datetime.datetime.now()
+    project_invite_obj = ProjectInvite.objects.filter(code=code).first()
+    if not project_invite_obj:
+        return render(request, 'invite_join.html', {'error': '邀请码不合法'})
+    if request.tracer.user == project_invite_obj.project.creator:
+        return render(request, 'invite_join.html', {'error': '项目创建者无需加入项目'})
+
+    # 2 判断是否已经是项目参与者
+    project_user_exists = ProjectUser.objects.filter(project=project_invite_obj.project,
+                                                     user=request.tracer.user).exists()
+    if project_user_exists:
+        return render(request, 'invite_join.html', {'error': '项目成员不用加入项目'})
+
+    # 3 判断项目创建者的项目成员数是否已经超标
+    # 3.1 拿到项目创建者的价格策略
+    order_record = OrderRecord.objects.filter(user=request.tracer.user, status=1).order_by(
+        '-id').first()
+
+    if order_record.price.category == 1:  # 免费版
+        # 3.1.1 如果价格策略是免费版，可以直接获取它的合法人数
+        max_member = order_record.project.team_member
+
+    else:
+        # 3.1.2 如果价格策略不是免费版，则需要判断该价格策略是否过期
+        if order_record.end_time < current_datetime:  # 过期
+            max_member = PricePolicy.objects.filter(category=1).first().team_member
+        else:
+            # 没有过期
+            max_member = order_record.project.team_member
+
+    # 3.2 拿到该项目已有人数
+    project_join_count = ProjectUser.objects.filter(project=project_invite_obj.project).count()
+    if project_join_count >= max_member:
+        return render(request, 'invite_join.html', {'error': '项目成员超过限制'})
+
+    # 4 判断邀请码是否过期
+    # 4.1 创建验证码时间 + 过期时间
+    # 使用timedelta方法进行时间相加
+    limit_datetime = project_invite_obj.create_datetime + datetime.timedelta(minutes=project_invite_obj.period)
+    if current_datetime > limit_datetime:
+        return render(request, 'invite_join.html', {'error': '邀请码过期'})
+
+    # 5 判断邀请码是否超过设置人数
+    if project_invite_obj.count:  # 如果有设置限制人数
+        if project_invite_obj.user_count > project_invite_obj.count:
+            return render(request, 'invite_join.html', {'error': '邀请码已超过邀请人数'})
+    project_invite_obj.user_count += 1
+    project_invite_obj.save()
+
+    # 6 通过校验，将当前用户加入项目
+    # 对项目参与表进行添加，这样项目参与人数也进行了增加
+    ProjectUser.objects.create(user=request.tracer.user, project=project_invite_obj.project)
+
+    # 7 对项目的参与人数数据进行更新
+    project_invite_obj.project.join_count += 1
+    project_invite_obj.project.save()
+    return render(request, 'invite_join.html', {'project': project_invite_obj.project})
