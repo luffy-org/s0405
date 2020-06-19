@@ -6,6 +6,9 @@ from tencentcloud.sms.v20190711 import sms_client, models
 
 def tencent_send_msg(phone, ret_num, template_id):
     try:
+        print(
+            '准备发短信'
+        )
         cred = credential.Credential(settings.SecretId, settings.SecretKey)
         client = sms_client.SmsClient(cred, "ap-guangzhou")
         req = models.SendSmsRequest()
@@ -17,7 +20,7 @@ def tencent_send_msg(phone, ret_num, template_id):
         req.TemplateID = template_id
         req.TemplateParamSet = [ret_num]
         resp = client.SendSms(req)
-
+        print(resp.to_json_string(indent=2))
 
     except TencentCloudSDKException as err:
         print(err)

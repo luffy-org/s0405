@@ -374,6 +374,9 @@ def issues_update(request, project_id, issues_id):
                 if not project_user:
                     res['error'] = '该选项不存在'
                 else:
+                    print('field_name', field_name)
+                    print('project_user.user', project_user.user)
+                    print('issues_obj', issues_obj)
                     setattr(issues_obj, field_name, project_user.user)
                     issues_obj.save()
                     content = '{} 选项更新为{}'.format(field_obj.verbose_name, str(project_user.user))
@@ -493,7 +496,7 @@ def invite_join(request, code):
 
     if order_record.price.category == 1:  # 免费版
         # 3.1.1 如果价格策略是免费版，可以直接获取它的合法人数
-        max_member = order_record.project.team_member
+        max_member = order_record.price.team_member
 
     else:
         # 3.1.2 如果价格策略不是免费版，则需要判断该价格策略是否过期
@@ -501,7 +504,7 @@ def invite_join(request, code):
             max_member = PricePolicy.objects.filter(category=1).first().team_member
         else:
             # 没有过期
-            max_member = order_record.project.team_member
+            max_member = order_record.price.team_member
 
     # 3.2 拿到该项目已有人数
     project_join_count = ProjectUser.objects.filter(project=project_invite_obj.project).count()

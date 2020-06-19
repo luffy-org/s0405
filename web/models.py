@@ -2,6 +2,9 @@ from django.db import models
 
 
 # Create your models here.
+from django.utils import timezone
+
+
 class UserInfo(models.Model):
     """
     用户信息表
@@ -35,7 +38,7 @@ class PricePolicy(models.Model):
     create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
-        return self.category
+        return self.title
 
     class Meta:
         verbose_name = "02-价格策略表"
@@ -186,13 +189,10 @@ class Issues(models.Model):
                                on_delete=models.SET_NULL)
     creator = models.ForeignKey(verbose_name='创建者', to='UserInfo', related_name='create_problems')
 
-    create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+    create_datetime = models.DateTimeField(verbose_name='创建时间', default=timezone.now)
     latest_update_datetime = models.DateTimeField(verbose_name='最后更新时间', auto_now=True)
 
-    class Meta:
-        verbose_name = '08-项目的问题表'
-        db_table = verbose_name
-        verbose_name_plural = verbose_name
+
 
 
 class IssuesType(models.Model):

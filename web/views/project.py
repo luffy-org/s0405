@@ -37,18 +37,20 @@ def list_project(request):
         region = 'ap-guangzhou'
         create_bucket(bucket, region)  # 为每个项目创建存储桶
 
+
         # 2， 创建项目
         project_obj = form.save(commit=False)
         project_obj.creator = request.tracer.user
         project_obj.bucket = bucket
         project_obj.region = region
-        instance = project_obj.save()
+        project_obj.save()
+
 
         # 3. 项目初始化创建一个问题类型
         # 批量写入数据库
         issues_type_object_list = []
         for item in IssuesType.PROJECT_INIT_LIST:  # 循环默认的问题类型
-            issues_type_object_list.append(IssuesType(name=item, project=instance))
+            issues_type_object_list.append(IssuesType(name=item, project=project_obj))
         IssuesType.objects.bulk_create(issues_type_object_list)
 
         return JsonResponse({"status": True})

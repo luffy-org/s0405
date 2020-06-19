@@ -72,10 +72,11 @@ class UserInfoModelForm(BootStrapForm, ModelForm):
         if not phone:
             return code
         redis_code = conn.get(phone)
+        print('redis_code', redis_code)
 
         if not redis_code:
             raise ValidationError('验证码失效，请重新获取验证码')
-        if code.strip() != redis_code:
+        if code.strip() != redis_code.decode('utf-8'):
             raise ValidationError('验证码错误')
         return code
 
