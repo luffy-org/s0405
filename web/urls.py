@@ -13,6 +13,9 @@ urlpatterns = [
     url(r'^project/list/$', project.list_project, name='list_project'),
     url(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star, name='project_star'),
     url(r'^project/unstar/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_unstar, name='project_unstar'),
+    url(r'^price/$',home.price, name='price'),
+    url(r'^payment/(?P<policy_id>\d+)/$', home.payment, name='payment'),
+    url(r'^pay/$', home.pay, name='pay'),
     # 项目功能
     url(r'^manage/(?P<project_id>\d+)/', include([
         url(r'^dashboard/$', dashboard.dashboard, name='dashboard'),  # 项目详细页面

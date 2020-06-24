@@ -374,9 +374,6 @@ def issues_update(request, project_id, issues_id):
                 if not project_user:
                     res['error'] = '该选项不存在'
                 else:
-                    print('field_name', field_name)
-                    print('project_user.user', project_user.user)
-                    print('issues_obj', issues_obj)
                     setattr(issues_obj, field_name, project_user.user)
                     issues_obj.save()
                     content = '{} 选项更新为{}'.format(field_obj.verbose_name, str(project_user.user))
